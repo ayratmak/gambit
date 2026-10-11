@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gambit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Antimetal-style editorial split. Text left, live 3D constellation of chess pieces right; quiet dashed-box sections below. */
+:root {
+  --bg: #D8D7CF;
+  --surface: #E3E2DB;
+  --ink: #17150F;
+  --muted: #5C5950;
+  --line: rgba(23, 21, 15, .16);
+  --line-strong: rgba(23, 21, 15, .34);
+  --accent: #2E5B45;
+  --pill: rgba(232, 231, 225, .72);
+  --card-bg: #17150F;
+  --card-fg: #E9E7DF;
+  --card-muted: #A4A095;
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --gutter: clamp(16px, 4.5vw, 72px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12120E; --surface: #1B1B16; --ink: #E7E4D9; --muted: #9B978A;
+    --line: rgba(231, 228, 217, .14); --line-strong: rgba(231, 228, 217, .32);
+    --accent: #86B79A; --pill: rgba(30, 30, 24, .72);
+    --card-bg: #22221B; --card-fg: #E7E4D9; --card-muted: #9B978A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12120E; --surface: #1B1B16; --ink: #E7E4D9; --muted: #9B978A;
+  --line: rgba(231, 228, 217, .14); --line-strong: rgba(231, 228, 217, .32);
+  --accent: #86B79A; --pill: rgba(30, 30, 24, .72);
+  --card-bg: #22221B; --card-fg: #E7E4D9; --card-muted: #9B978A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-ui); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.wrap { padding-inline: var(--gutter); max-width: 1440px; margin-inline: auto; }
+
+/* Nav: three floating pills */
+.nav {
+  position: fixed; inset-inline: 0; top: 0; z-index: 20;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) var(--gutter) 0;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+  pointer-events: none;
+}
+.pill {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 4px; padding: 5px;
+  background: var(--pill); border: 1px solid var(--line);
+  border-radius: 999px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  font-size: 13px;
+}
+.pill a { padding: 6px 13px; border-radius: 999px; color: var(--muted); transition: color .2s, background .2s; }
+.pill a:hover { color: var(--ink); }
+.pill.left { justify-self: start; }
+.pill.right { justify-self: end; }
+.pill.brand { padding: 8px 40px; gap: 9px; font-weight: 500; font-size: 15px; color: var(--ink); }
+.pill.brand canvas { width: 24px; height: 24px; margin: -4px 0; }
+.pill a.solid { background: var(--ink); color: var(--bg); }
+.pill a.solid:hover { opacity: .88; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 500 14px var(--font-ui); padding: 13px 22px; border-radius: 999px;
+  border: 0; cursor: pointer; transition: transform .2s, opacity .2s, background .2s;
+}
+.btn.solid { background: var(--ink); color: var(--bg); }
+.btn.solid:hover { opacity: .88; }
+.btn.bracket {
+  position: relative; background: transparent; color: var(--ink); border-radius: 6px;
+  border: 1px dashed var(--line-strong);
+}
+.btn.bracket::before, .btn.bracket::after {
+  content: ""; position: absolute; width: 8px; height: 8px; border: 1.5px solid var(--ink);
+}
+.btn.bracket::before { left: -4px; top: -4px; border-right: 0; border-bottom: 0; }
+.btn.bracket::after { right: -4px; bottom: -4px; border-left: 0; border-top: 0; }
+.btn.bracket:hover { background: var(--surface); }
+
+/* Hero */
+.hero {
+  position: relative; min-height: min(860px, 100svh);
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center;
+  padding-block: 120px 40px;
+}
+.hero-copy { position: relative; z-index: 2; display: grid; gap: 28px; max-width: 560px; }
+.hero h1 { font-size: clamp(46px, 6.4vw, 92px); line-height: .98; letter-spacing: -.035em; }
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero .lede { font-family: var(--font-display); font-size: clamp(19px, 1.7vw, 23px); line-height: 1.38; color: var(--muted); max-width: 30em; font-weight: 350; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: center; padding-top: 8px; }
+
+.stage { position: relative; height: clamp(440px, 62vw, 760px); margin-right: calc(var(--gutter) * -1); }
+.stage canvas { position: absolute; inset: 0 0 72px 0; width: 100%; height: calc(100% - 72px); display: block; cursor: grab; }
+.stage canvas:active { cursor: grabbing; }
+.fig {
+  position: absolute; left: 6%; bottom: 0; z-index: 2;
+  display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center;
+}
+.chips { display: flex; gap: 4px; padding: 4px; border: 1px dashed var(--line-strong); border-radius: 999px; }
+.chip {
+  font: 500 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); background: none; border: 0; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+  transition: background .25s, color .25s;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.chip:hover:not([aria-pressed="true"]) { color: var(--ink); }
+.caption { min-height: 1.5em; transition: opacity .4s; }
+
+/* Shared section rhythm */
+section { padding-block: clamp(80px, 11vw, 150px); border-top: 1px solid var(--line); }
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
+.split > * { min-width: 0; }
+.h2 { font-size: clamp(34px, 4vw, 56px); line-height: 1.04; letter-spacing: -.025em; }
+.eyebrow { margin-bottom: 18px; display: block; }
+
+/* Essay */
+.essay { display: grid; gap: 22px; max-width: 62ch; }
+.essay p { font-family: var(--font-display); font-size: clamp(18px, 1.55vw, 21px); line-height: 1.5; font-weight: 350; }
+.essay p:first-child::first-letter {
+  float: left; font-size: 3.4em; line-height: .9; padding: 6px 10px 2px; margin: 4px 12px 0 0;
+  color: var(--accent); border: 1px dashed var(--line-strong); font-weight: 400;
+}
+.roles { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 8px; }
+.roles span { font: 400 12px var(--font-mono); color: var(--muted); padding: 6px 10px; border: 1px dashed var(--line-strong); border-radius: 4px; }
+
+/* Lesson demo */
+.lesson-head { display: grid; gap: 18px; max-width: 34ch; }
+.lesson-head p { color: var(--muted); font-size: 16px; }
+.lesson-head .scenario { font-family: var(--font-display); font-size: 20px; line-height: 1.45; color: var(--ink); font-weight: 350; }
+.game {
+  border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface);
+  padding: clamp(18px, 3vw, 34px); display: grid; gap: 26px;
+}
+.game-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; align-items: baseline; }
+.score { display: flex; gap: 26px; font-variant-numeric: tabular-nums; }
+.score div { display: grid; gap: 2px; }
+.score b { font: 400 34px/1 var(--font-display); letter-spacing: -.02em; }
+.matrix-wrap { overflow-x: auto; }
+.matrix { border-collapse: separate; border-spacing: 6px; width: 100%; min-width: 340px; font-variant-numeric: tabular-nums; }
+.matrix th { font: 500 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 4px 8px; text-align: left; }
+.matrix td {
+  position: relative; height: 82px; padding: 12px 14px; border: 1px dashed var(--line-strong); border-radius: 6px;
+  vertical-align: bottom; transition: background .3s, border-color .3s;
+}
+.matrix td .pay { font: 400 26px var(--font-display); letter-spacing: -.01em; }
+.matrix td .pay i { font-style: normal; color: var(--muted); }
+.matrix td .tag { position: absolute; top: 9px; right: 10px; font: 500 10px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.matrix td.hit { background: var(--bg); border: 1.5px solid var(--accent); }
+.matrix td.hit .pay { color: var(--accent); }
+.moves { display: flex; flex-wrap: wrap; gap: 12px; }
+.moves .btn { flex: 1 1 160px; justify-content: center; }
+.moves .btn.bracket { border-radius: 999px; }
+.moves .btn.bracket::before, .moves .btn.bracket::after { display: none; }
+.moves .btn:disabled { opacity: .35; cursor: default; }
+.track { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.sq {
+  aspect-ratio: 1; max-width: 100%; border-radius: 3px; display: grid; place-items: center;
+  font: 500 11px var(--font-mono); color: var(--muted); border: 1px solid var(--line);
+}
+.sq:nth-child(even) { background: var(--line); }
+.sq.done { color: var(--ink); }
+.sq.now { border-color: var(--accent); color: var(--accent); }
+.debrief { font-family: var(--font-display); font-size: 18px; line-height: 1.5; min-height: 3em; font-weight: 350; }
+.debrief strong { font-weight: 500; }
+.game-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.link-btn { background: none; border: 0; padding: 0; font: 500 13px var(--font-ui); color: var(--ink); cursor: pointer; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--line-strong); }
+
+/* Method */
+.method-card {
+  background: var(--card-bg); color: var(--card-fg); border-radius: 4px;
+  padding: clamp(26px, 3.5vw, 44px); display: grid; gap: 18px; border: 1px solid var(--line);
+}
+.method-card .mono { color: var(--card-muted); }
+.method-card h3 { font-size: clamp(30px, 3vw, 42px); line-height: 1.05; letter-spacing: -.02em; }
+.method-card p { color: var(--card-muted); font-size: 14px; max-width: 44ch; }
+.steps { display: grid; gap: 14px; }
+.step {
+  position: relative; border: 1px dashed var(--line-strong); border-radius: 4px;
+  padding: 22px 24px; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 16px;
+}
+.step::before, .step::after { content: ""; position: absolute; width: 7px; height: 7px; border: 1.5px solid var(--ink); }
+.step::before { left: -3px; top: -3px; border-right: 0; border-bottom: 0; }
+.step::after { right: -3px; bottom: -3px; border-left: 0; border-top: 0; }
+.step .n { font: 400 30px/1 var(--font-display); color: var(--accent); grid-row: span 2; }
+.step h4 { margin: 0; font: 400 22px var(--font-display); }
+.step p { color: var(--muted); font-size: 14px; }
+
+/* Tracks */
+.tracks-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 44px; }
+.tracks-head p { color: var(--muted); max-width: 40ch; }
+.tracks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); border-left: 1px solid var(--line); }
+.trk {
+  padding: 28px 26px 30px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  display: grid; grid-template-rows: auto auto 1fr auto; gap: 14px; min-width: 0;
+  transition: background .3s;
+}
+.trk:hover { background: var(--surface); }
+.trk-top { display: flex; justify-content: space-between; align-items: start; }
+.trk canvas { width: 46px; height: 46px; transition: transform .5s cubic-bezier(.2, .8, .2, 1); }
+.trk:hover canvas { transform: translateY(-6px); }
+.trk h3 { font-size: 28px; letter-spacing: -.015em; }
+.trk ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.trk li { font-size: 14px; color: var(--muted); padding-left: 16px; position: relative; }
+.trk li::before { content: ""; position: absolute; left: 0; top: .62em; width: 7px; height: 1px; background: var(--line-strong); }
+.trk .meta { font-variant-numeric: tabular-nums; }
+
+/* Closing */
+.closing { display: grid; gap: 30px; }
+.closing h2 { font-size: clamp(64px, 12vw, 180px); line-height: .9; letter-spacing: -.05em; }
+.closing h2 em { color: var(--accent); }
+.closing-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; align-items: end; }
+.closing-row p { font-family: var(--font-display); font-size: 21px; color: var(--muted); max-width: 32ch; font-weight: 350; }
+footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+@media (max-width: 960px) {
+  .hero { grid-template-columns: 1fr; padding-block: 110px 24px; min-height: 0; }
+  .stage { height: clamp(380px, 92vw, 560px); margin-inline: calc(var(--gutter) * -1); }
+  .fig { left: var(--gutter); }
+  .split { grid-template-columns: 1fr; }
+  .tracks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pill.left { display: none; }
+  .nav { grid-template-columns: auto 1fr; }
+  .pill.brand { padding: 8px 18px; }
+}
+@media (max-width: 600px) {
+  .tracks { grid-template-columns: 1fr; }
+  .pill.right a:not(.solid) { display: none; }
+  .step { grid-template-columns: 38px minmax(0, 1fr); padding: 18px; }
+  .matrix td { height: 70px; }
+  .matrix td .pay { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}
+</style>
+
+<nav class="nav" aria-label="Main">
+  <div class="pill left">
+    <a href="#tracks">Courses</a>
+    <a href="#method">Method</a>
+    <a href="#lesson">Sample lesson</a>
+  </div>
+  <a class="pill brand" href="#top" aria-label="Gambit home"><canvas class="piece-icon" data-piece="knight" width="48" height="48" aria-hidden="true"></canvas>Gambit</a>
+  <div class="pill right">
+    <a href="#lesson">Sign in</a>
+    <a class="solid" href="#tracks">Enrol</a>
+  </div>
+</nav>
+
+<main id="top">
+  <header class="hero wrap">
+    <div class="hero-copy">
+      <h1>See the whole <em>board.</em></h1>
+      <p class="lede">Gambit teaches game theory to people who negotiate, buy and compete for a living. Courses are led by practitioners, and you play every game before you study it.</p>
+      <div class="cta-row">
+        <a class="btn solid" href="#tracks">Browse courses</a>
+        <a class="btn bracket" href="#lesson">Play a sample lesson</a>
+      </div>
+    </div>
+    <div class="stage" id="stage">
+      <canvas id="field" aria-label="A slowly rotating constellation of chess pieces that rearranges into a coalition network, a game tree and a payoff matrix"></canvas>
+      <div class="fig">
+        <div class="chips" role="group" aria-label="Formation">
+          <button class="chip" data-f="0" aria-pressed="true">Coalitions</button>
+          <button class="chip" data-f="1" aria-pressed="false">Game tree</button>
+          <button class="chip" data-f="2" aria-pressed="false">Payoff matrix</button>
+        </div>
+        <span class="mono caption" id="caption">Fig. 1 · Cooperative game · 5 coalitions</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="wrap" id="why">
+    <div class="split">
+      <div>
+        <span class="mono eyebrow">Why game theory</span>
+        <h2 class="h2">Every deal is a game, whether you treat it as one or not.</h2>
+      </div>
+      <div class="essay">
+        <p>Your best move in a tender, a pricing call or a negotiation depends on what the other side will do, and their best move depends on you. Most professionals learn this the expensive way, one lost margin at a time.</p>
+        <p>Gambit gives you those reps without the cost. Each course is built by someone who has played the game for real, working alongside academic game theorists, so the theory always comes with the scar tissue.</p>
+        <div class="roles" aria-label="Faculty backgrounds">
+          <span>Chief procurement officers</span>
+          <span>Competition economists</span>
+          <span>M&amp;A negotiators</span>
+          <span>Auction designers</span>
+          <span>Academic game theorists</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="lesson">
+    <div class="split">
+      <div class="lesson-head">
+        <span class="mono">Sample · Procurement, module 3</span>
+        <h2 class="h2">Repeated tenders.</h2>
+        <p class="scenario">You and one rival supplier bid for the same contract every quarter. Hold your price, or undercut?</p>
+        <p>Eight quarters. Your rival follows a fixed strategy you'll see at the end. Payoffs are margin in £k per quarter.</p>
+      </div>
+      <div class="game" aria-live="polite">
+        <div class="game-top">
+          <div class="score">
+            <div><span class="mono">You</span><b id="sYou">0</b></div>
+            <div><span class="mono">Rival</span><b id="sThem">0</b></div>
+          </div>
+          <span class="mono" id="qLabel">Quarter 1 of 8</span>
+        </div>
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <thead>
+              <tr><th></th><th>Rival holds</th><th>Rival undercuts</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">You hold</th>
+                <td id="c-HH"><span class="pay">3<i>, 3</i></span></td>
+                <td id="c-HU"><span class="pay">0<i>, 5</i></span></td></tr>
+              <tr><th scope="row">You undercut</th>
+                <td id="c-UH"><span class="pay">5<i>, 0</i></span></td>
+                <td id="c-UU"><span class="tag">Nash</span><span class="pay">1<i>, 1</i></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="moves">
+          <button class="btn solid" id="mHold">Hold price</button>
+          <button class="btn bracket" id="mCut">Undercut</button>
+        </div>
+        <div class="track" id="track" aria-label="Quarters played"></div>
+        <p class="debrief" id="debrief">In a single tender, undercutting is the dominant move: whatever your rival does, it pays you more. Does that still hold when you meet again next quarter?</p>
+        <div class="game-foot">
+          <span class="mono">Your margin, rival margin</span>
+          <button class="link-btn" id="reset">Start again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="method">
+    <div class="split">
+      <div class="method-card">
+        <span class="mono">The method</span>
+        <h3>Play the game first. Learn its name after.</h3>
+        <p>Lectures explain equilibria. Gambit puts you inside one, against classmates and strategy bots, then shows you where it was.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><h4>Play</h4><p>Each concept opens as a live game: a sealed-bid auction, a supplier standoff, a three-way coalition split. You make real choices with a timer running.</p></div>
+        <div class="step"><span class="n">2</span><h4>Debrief</h4><p>A practitioner replays the cohort's moves, marks the equilibrium and explains why most of the room missed it.</p></div>
+        <div class="step"><span class="n">3</span><h4>Apply</h4><p>You map the game onto a live deal from your own work. Faculty review it and send back the move they'd make.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="tracks">
+    <div class="tracks-head">
+      <div>
+        <span class="mono eyebrow">Courses</span>
+        <h2 class="h2">Six tracks, one way of thinking.</h2>
+      </div>
+      <p>Self-paced modules with live cohort games every fortnight. Take one track or the full programme.</p>
+    </div>
+    <div class="tracks">
+      <article class="trk">
+        <div class="trk-top"><canvas class="piece-icon" data-piece="rook" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">9 modules · 7 h</span></div>
+        <h3>Procurement</h3>
+        <ul><li>Repeated tenders and price discipline</li><li>Reverse auctions and the winner's curse</li><li>Supplier lock-in and switching costs</li></ul>
+        <span class="mono">Rook · holds the line</span>
+      </article>
+      <article class="trk">
+        <div class="trk-top"><canvas class="piece-icon" data-piece="knight" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">10 modules · 8 h</span></div>
+        <h3>Negotiation</h3>
+        <ul><li>Your walk-away as a threat point</li><li>Anchors and the zone of agreement</li><li>Commitment and credible threats</li></ul>
+        <span class="mono">Knight · never moves straight</span>
+      </article>
+      <article class="trk">
+        <div class="trk-top"><canvas class="piece-icon" data-piece="queen" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">8 modules · 6 h</span></div>
+        <h3>Strategy</h3>
+        <ul><li>Market entry and deterrence</li><li>First mover or fast follower</li><li>Signalling capacity you may never use</li></ul>
+        <span class="mono">Queen · every direction</span>
+      </article>
+      <article class="trk">
+        <div class="trk-top"><canvas class="piece-icon" data-piece="bishop" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">7 modules · 5 h</span></div>
+        <h3>Auctions &amp; bidding</h3>
+        <ul><li>Sealed-bid against open ascending</li><li>Bid shading and reserve prices</li><li>Combinatorial and spectrum auctions</li></ul>
+        <span class="mono">Bishop · the long diagonal</span>
+      </article>
+      <article class="trk">
+        <div class="trk-top"><canvas class="piece-icon" data-piece="pawn" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">7 modules · 5 h</span></div>
+        <h3>Pricing &amp; competition</h3>
+        <ul><li>Price wars between equals</li><li>Tacit collusion and why regulators care</li><li>What a price-match promise really signals</li></ul>
+        <span class="mono">Pawn · small moves add up</span>
+      </article>
+      <article class="trk">
+        <div class="trk-top"><canvas class="piece-icon" data-piece="king" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">6 modules · 4 h</span></div>
+        <h3>Alliances &amp; coalitions</h3>
+        <ul><li>Splitting gains with the Shapley value</li><li>Which coalitions hold together</li><li>Joint ventures and the hold-up problem</li></ul>
+        <span class="mono">King · protect the partnership</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap closing">
+    <span class="mono">Next cohort opens soon</span>
+    <h2>Your <em>move.</em></h2>
+    <div class="closing-row">
+      <p>Start with one track, or bring your whole commercial team to the table.</p>
+      <div class="cta-row">
+        <a class="btn solid" href="#tracks">Browse courses</a>
+        <a class="btn bracket" href="#lesson">Play the sample lesson</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span class="mono">Gambit · Game theory, taught at the table</span>
+  <span class="mono">© 2026</span>
+</footer>
+
+<script>
+(() => {
+  const TAU = Math.PI * 2;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Chess piece silhouettes, drawn in a 100x100 box ---------- */
+  function rr(c, x, y, w, h, r) {
+    c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+  }
+  const F = (c, fn) => { c.beginPath(); fn(); c.fill(); };
+  const ell = (c, x, y, rx, ry) => F(c, () => c.ellipse(x, y, rx, ry, 0, 0, TAU));
+  const poly = (c, pts) => F(c, () => { c.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); });
+  const cut = (c, fn) => { c.save(); c.globalCompositeOperation = 'destination-out'; fn(); c.restore(); };
+
+  function drawPiece(c, type) {
+    F(c, () => rr(c, 23, 84, 54, 11, 3));
+    F(c, () => rr(c, 29, 77.5, 42, 8, 2.5));
+    switch (type) {
+      case 'pawn':
+        poly(c, [[36, 79], [43.5, 55], [56.5, 55], [64, 79]]);
+        ell(c, 50, 54, 15, 4.2);
+        ell(c, 50, 38, 13.5, 13.5);
+        break;
+      case 'rook':
+        poly(c, [[33, 79], [37.5, 44], [62.5, 44], [67, 79]]);
+        ell(c, 50, 44, 18.5, 3.6);
+        F(c, () => rr(c, 30, 22, 40, 22, 2));
+        cut(c, () => { c.fillRect(39, 19, 7, 10); c.fillRect(54, 19, 7, 10); });
+        break;
+      case 'bishop':
+        poly(c, [[35, 79], [43, 57], [57, 57], [65, 79]]);
+        ell(c, 50, 56.5, 14.5, 4);
+        F(c, () => { c.moveTo(50, 17); c.bezierCurveTo(67, 28, 67, 45, 58.5, 53); c.lineTo(41.5, 53); c.bezierCurveTo(33, 45, 33, 28, 50, 17); });
+        ell(c, 50, 14, 4.6, 4.6);
+        cut(c, () => { c.lineWidth = 3.6; c.lineCap = 'round'; c.beginPath(); c.moveTo(56, 27); c.lineTo(47.5, 40); c.stroke(); });
+        break;
+      case 'queen':
+        poly(c, [[33, 79], [42, 48], [58, 48], [67, 79]]);
+        ell(c, 50, 48, 15.5, 4.2);
+        poly(c, [[36, 47], [29.5, 24], [40.5, 36], [44.5, 19], [50, 34], [55.5, 19], [59.5, 36], [70.5, 24], [64, 47]]);
+        [[29.5, 22.5], [44.5, 17.5], [55.5, 17.5], [70.5, 22.5]].forEach(([x, y]) => ell(c, x, y, 3.8, 3.8));
+        break;
+      case 'king':
+        poly(c, [[33, 79], [42, 48], [58, 48], [67, 79]]);
+        ell(c, 50, 48, 15.5, 4.2);
+        F(c, () => { c.moveTo(35.5, 47); c.bezierCurveTo(28, 34, 35, 25, 50, 27.5); c.bezierCurveTo(65, 25, 72, 34, 64.5, 47); c.closePath(); });
+        F(c, () => { c.rect(47.4, 6, 5.2, 22); c.rect(41.5, 11.5, 17, 5.2); });
+        break;
+      case 'knight': {
+        const p = [[67, 79], [65, 64], [68, 52], [71, 40], [67, 28], [59, 19.5], [57, 9], [51, 16], [45, 16.5], [35.5, 22.5], [27, 33], [20, 44], [22.5, 51.5], [30, 53.5], [38.5, 48.5], [44, 49.5], [38, 60], [34, 70], [33, 79]];
+        const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        F(c, () => {
+          let s = m(p[p.length - 1], p[0]); c.moveTo(s[0], s[1]);
+          for (let i = 0; i < p.length; i++) { const n = p[(i + 1) % p.length], q = m(p[i], n); c.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]); }
+          c.closePath();
+        });
+        cut(c, () => { c.beginPath(); c.ellipse(46, 29, 2.7, 2.7, 0, 0, TAU); c.fill(); });
+        break;
+      }
+    }
+  }
+
+  const TYPES = ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn'];
+  const SPRITE = 160;
+  let colours = {}, sprites = {};
+  function readColours() {
+    const cs = getComputedStyle(document.documentElement);
+    colours = { ink: cs.getPropertyValue('--ink').trim(), accent: cs.getPropertyValue('--accent').trim(), line: cs.getPropertyValue('--ink').trim() };
+  }
+  function makeSprite(type, fill) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = SPRITE;
+    const c = cv.getContext('2d'); c.scale(SPRITE / 100, SPRITE / 100); c.fillStyle = fill; drawPiece(c, type); return cv;
+  }
+  function buildSprites() {
+    readColours();
+    sprites = {};
+    TYPES.forEach(t => { sprites[t] = makeSprite(t, colours.ink); sprites[t + ':a'] = makeSprite(t, colours.accent); });
+    document.querySelectorAll('.piece-icon').forEach(cv => {
+      const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+      c.scale(cv.width / 100, cv.height / 100); c.fillStyle = colours.ink; drawPiece(c, cv.dataset.piece);
+    });
+  }
+
+  /* ---------- Formations ---------- */
+  const N = 64;
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const gauss = () => { let u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * v); };
+
+  // Piece types follow the game tree's depth: king at the root, pawns at the leaves.
+  const nodes = [];
+  for (let i = 0; i < N; i++) {
+    const lvl = i === 63 ? 0 : Math.floor(Math.log2(i + 1));
+    let type = ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn'][lvl];
+    if (lvl === 3 && i % 2) type = 'knight';
+    if (lvl === 4 && i % 4 === 0) type = 'bishop';
+    if (lvl === 4 && i % 4 === 2) type = 'knight';
+    const scale = { king: 1.22, queen: 1.14, rook: 1, bishop: 1.04, knight: 1.04, pawn: .86 }[type];
+    nodes.push({ type, accent: i === 0, size: scale * (0.72 + rnd() * 0.62), x: 0, y: 0, z: 0 });
+  }
+  nodes[0].size = 1.5; nodes[63].size = 1.32;
+
+  function nearestEdges(P, k, sameGroup) {
+    const set = new Set(), E = [];
+    for (let i = 0; i < N; i++) {
+      const d = [];
+      for (let j = 0; j < N; j++) if (j !== i && (!sameGroup || sameGroup(i, j))) {
+        const dx = P[i][0] - P[j][0], dy = P[i][1] - P[j][1], dz = P[i][2] - P[j][2];
+        d.push([dx * dx + dy * dy + dz * dz, j]);
+      }
+      d.sort((a, b) => a[0] - b[0]);
+      for (let m = 0; m < k && m < d.length; m++) {
+        const j = d[m][1], key = i < j ? i + '-' + j : j + '-' + i;
+        if (!set.has(key)) { set.add(key); E.push([i, j]); }
+      }
+    }
+    return E;
+  }
+
+  // 0: coalitions, five clusters on a sphere, grand coalition at the centre
+  const coalitions = (() => {
+    const centres = [[.0, -.62, .3], [.66, -.05, -.25], [-.6, .12, -.35], [.28, .62, .38], [-.3, .52, .55]];
+    const group = [], P = [];
+    for (let i = 0; i < N; i++) {
+      if (i === 0) { P.push([0, 0, 0]); group.push(-1); continue; }
+      if (i === 63) { P.push([.05, -.05, -.55]); group.push(-1); continue; }
+      const g = i % 5, c = centres[g];
+      P.push([c[0] + gauss() * .17, c[1] + gauss() * .17, c[2] + gauss() * .17]); group.push(g);
+    }
+    const E = nearestEdges(P, 2, (i, j) => group[i] === group[j]);
+    // tie each coalition back to the centre through its closest member
+    for (let g = 0; g < 5; g++) {
+      let best = -1, bd = 1e9;
+      for (let i = 0; i < N; i++) if (group[i] === g) { const d = Math.hypot(...P[i]); if (d < bd) { bd = d; best = i; } }
+      E.push([0, best]); E.push([63, best]);
+    }
+    E.push([0, 63]);
+    return { P, E, caption: 'Fig. 1 · Cooperative game · 5 coalitions' };
+  })();
+
+  // 1: game tree, a binary tree five moves deep, fanned out as a cone
+  const tree = (() => {
+    const P = [], E = [];
+    for (let i = 0; i < 63; i++) {
+      const L = Math.floor(Math.log2(i + 1)), k = i - (2 ** L - 1), n = 2 ** L;
+      const a = ((k + .5) / n) * TAU + L * .35, r = L === 0 ? 0 : .16 + L * .2;
+      P.push([Math.cos(a) * r, -.78 + L * .34, Math.sin(a) * r]);
+      if (i) E.push([i, (i - 1) >> 1]);
+    }
+    P.push([0, -1.12, 0]); E.push([63, 0]);
+    P.forEach(q => { q[0] *= .72; q[1] = (q[1] + .1) * .7; q[2] *= .72; });
+    return { P, E, caption: 'Fig. 2 · Extensive form · 5 moves · 32 outcomes' };
+  })();
+
+  // 2: payoff matrix, a floating 2x2 grid of 4x4 cells
+  const matrix = (() => {
+    const P = [], E = [], cellOf = [];
+    const s = .17, off = .4;
+    for (let i = 0; i < N; i++) {
+      const cell = i % 4, idx = Math.floor(i / 4), r = idx % 4, q = Math.floor(idx / 4);
+      const cx = cell % 2 ? off : -off, cz = cell < 2 ? -off : off;
+      P.push([cx + (r - 1.5) * s, 0, cz + (q - 1.5) * s]); cellOf.push(cell);
+    }
+    for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+      if (cellOf[i] !== cellOf[j]) continue;
+      const d = Math.hypot(P[i][0] - P[j][0], P[i][2] - P[j][2]);
+      if (d < s * 1.05) E.push([i, j]);
+    }
+    return { P, E, caption: 'Fig. 3 · Normal form · 2 players · 2 × 2 strategies' };
+  })();
+
+  const FORMS = [coalitions, tree, matrix];
+
+  /* ---------- Render loop ---------- */
+  const canvas = document.getElementById('field');
+  const ctx = canvas.getContext('2d');
+  const caption = document.getElementById('caption');
+  const chips = [...document.querySelectorAll('.chip')];
+  let W = 0, H = 0, dpr = 1;
+  function resize() {
+    const r = canvas.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = r.width; H = r.height; canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    if (reduce) draw(performance.now());
+  }
+
+  let from = 0, to = 0, morphStart = -1e9, lastSwitch = 0, userHold = 0;
+  const DUR = 1900, SPREAD = 700, CYCLE = 7200;
+  function setForm(f, byUser) {
+    if (f === to && morphT(performance.now()) >= 1) return;
+    from = to; to = f; morphStart = performance.now(); lastSwitch = morphStart;
+    if (byUser) userHold = morphStart + 16000;
+    chips.forEach((c, i) => c.setAttribute('aria-pressed', i === f ? 'true' : 'false'));
+    caption.style.opacity = 0;
+    setTimeout(() => { caption.textContent = FORMS[f].caption; caption.style.opacity = 1; }, 250);
+    if (reduce) { morphStart = -1e9; draw(performance.now()); }
+  }
+  chips.forEach((c, i) => c.addEventListener('click', () => setForm(i, true)));
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const morphT = now => Math.min(1, Math.max(0, (now - morphStart) / (DUR + SPREAD)));
+
+  // pointer: hover tilts, drag spins
+  let mx = 0, my = 0, tmx = 0, tmy = 0, spin = 0, spinV = 0, dragging = false, lastX = 0;
+  addEventListener('pointermove', e => {
+    const r = canvas.getBoundingClientRect();
+    tmx = ((e.clientX - r.left) / r.width - .5) * 2; tmy = ((e.clientY - r.top) / r.height - .5) * 2;
+    if (dragging) { spinV = (e.clientX - lastX) * .006; spin += spinV; lastX = e.clientX; }
+  }, { passive: true });
+  canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
+  addEventListener('pointerup', () => { dragging = false; });
+
+  let visible = true;
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(canvas);
+
+  const proj = new Array(N);
+  function draw(now) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    const A = FORMS[from].P, B = FORMS[to].P;
+    const t = reduce ? 0 : now * .001;
+    mx += (tmx - mx) * .04; my += (tmy - my) * .04;
+    if (!dragging) { spinV *= .95; spin += spinV; }
+    const ry = t * .11 + spin + mx * .35, rx = .32 + my * .12 + (to === 2 ? .22 : 0) * ease(morphT(now));
+    const cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+    const scale = Math.min(W, H * 1.15) * .37, D = 3.4;
+    const ox = W * .5, oy = H * .5;
+    const base = Math.max(22, Math.min(W, H) * .066);
+
+    for (let i = 0; i < N; i++) {
+      const local = reduce ? 1 : Math.min(1, Math.max(0, (now - morphStart - (i / N) * SPREAD) / DUR));
+      const e = ease(local), a = A[i], b = B[i];
+      const lift = Math.sin(Math.PI * e) * .18;
+      // gentle idle drift so nothing ever sits perfectly still
+      const bob = reduce ? 0 : Math.sin(t * .9 + i * 1.7) * .012;
+      let x = a[0] + (b[0] - a[0]) * e, y = a[1] + (b[1] - a[1]) * e - lift + bob, z = a[2] + (b[2] - a[2]) * e;
+      const x1 = x * cy - z * sy, z1 = x * sy + z * cy;
+      const y2 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
+      const p = D / (D + z2);
+      proj[i] = { i, sx: ox + x1 * scale * p, sy: oy + y2 * scale * p, z: z2, p };
+    }
+
+    // hairline edges, cross-fading between the old and new structure
+    const gT = reduce ? 1 : ease(morphT(now));
+    ctx.strokeStyle = colours.line; ctx.lineWidth = 1;
+    const edgeSet = (E, alpha) => {
+      if (alpha < .01) return;
+      for (const [i, j] of E) {
+        const a = proj[i], b = proj[j];
+        const depth = Math.min(1, Math.max(0, ((a.p + b.p) / 2 - .78) / .4));
+        ctx.globalAlpha = alpha * (.08 + depth * .2);
+        ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
+      }
+    };
+    if (from !== to) edgeSet(FORMS[from].E, 1 - gT);
+    edgeSet(FORMS[to].E, from !== to ? gT : 1);
+
+    // pieces, back to front
+    const order = proj.slice().sort((a, b) => b.z - a.z);
+    for (const q of order) {
+      const n = nodes[q.i];
+      const s = base * n.size * q.p * q.p;
+      const depth = Math.min(1, Math.max(0, (q.p - .74) / .46));
+      ctx.globalAlpha = .38 + depth * .62;
+      ctx.drawImage(sprites[n.type + (n.accent ? ':a' : '')], q.sx - s / 2, q.sy - s * .56, s, s);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function loop(now) {
+    requestAnimationFrame(loop);
+    if (!visible) { lastSwitch = Math.max(lastSwitch, now - CYCLE + 1500); return; }
+    if (now - lastSwitch > CYCLE && now > userHold) setForm((to + 1) % FORMS.length, false);
+    draw(now);
+  }
+
+  // theme changes rebuild the sprites
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { buildSprites(); if (reduce) draw(performance.now()); });
+  new MutationObserver(() => { buildSprites(); if (reduce) draw(performance.now()); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  buildSprites();
+  addEventListener('resize', resize);
+  resize();
+  lastSwitch = performance.now();
+  morphStart = -1e9;
+  draw(performance.now());
+  if (!reduce) requestAnimationFrame(loop);
+  document.fonts && document.fonts.ready.then(() => { buildSprites(); });
+
+  /* ---------- Sample lesson: repeated tenders vs tit-for-tat ---------- */
+  const PAY = { HH: [3, 3], HU: [0, 5], UH: [5, 0], UU: [1, 1] };
+  const ROUNDS = 8;
+  let hist = [];
+  const $ = id => document.getElementById(id);
+  const track = $('track');
+  for (let i = 0; i < ROUNDS; i++) { const d = document.createElement('div'); d.className = 'sq'; d.textContent = 'Q' + (i + 1); track.appendChild(d); }
+
+  function render() {
+    let you = 0, them = 0;
+    hist.forEach(h => { const p = PAY[h.y + h.t]; you += p[0]; them += p[1]; });
+    $('sYou').textContent = you; $('sThem').textContent = them;
+    document.querySelectorAll('.matrix td').forEach(td => td.classList.remove('hit'));
+    const last = hist[hist.length - 1];
+    if (last) $('c-' + last.y + last.t).classList.add('hit');
+    [...track.children].forEach((sq, i) => {
+      sq.className = 'sq' + (i < hist.length ? ' done' : '') + (i === hist.length && hist.length < ROUNDS ? ' now' : '');
+      sq.textContent = i < hist.length ? hist[i].y + '·' + hist[i].t : 'Q' + (i + 1);
+    });
+    const over = hist.length >= ROUNDS;
+    $('mHold').disabled = $('mCut').disabled = over;
+    $('qLabel').textContent = over ? 'Game over' : 'Quarter ' + (hist.length + 1) + ' of ' + ROUNDS;
+
+    const db = $('debrief');
+    if (!hist.length) {
+      db.innerHTML = 'In a single tender, undercutting is the dominant move: whatever your rival does, it pays you more. Does that still hold when you meet again next quarter?';
+    } else if (!over) {
+      const word = { HH: 'You both held. Healthy margins all round.', HU: 'Your rival undercut you and took the quarter.', UH: 'You undercut and took the whole contract.', UU: 'Price war. You both bid at cost.' }[last.y + last.t];
+      db.textContent = word;
+    } else {
+      const cuts = hist.filter(h => h.y === 'U').length;
+      const lastU = hist[ROUNDS - 1].y === 'U', midCuts = cuts - (lastU ? 1 : 0);
+      let msg = '<strong>Your rival played tit-for-tat:</strong> hold in the first quarter, then copy your previous move. ';
+      if (!cuts) msg += 'You held all eight quarters and earned 24. Repetition turned a game where undercutting dominates into one where holding pays.';
+      else {
+        msg += 'You earned ' + you + ', against 24 for holding every quarter. ';
+        if (midCuts) msg += you < 24 ? 'Each undercut bought one good quarter, then your rival matched you and the margin went to your client. ' : 'Your mid-game undercuts each won a quarter and lost the next, so they only broke even. ';
+        if (lastU) msg += 'Undercutting in the final quarter is the one move tit-for-tat can never punish. That end-game problem is why fixed-length contracts unravel, and it is module 4.';
+      }
+      db.innerHTML = msg;
+    }
+  }
+  function play(move) {
+    if (hist.length >= ROUNDS) return;
+    const rival = hist.length ? hist[hist.length - 1].y : 'H';
+    hist.push({ y: move, t: rival });
+    render();
+  }
+  $('mHold').addEventListener('click', () => play('H'));
+  $('mCut').addEventListener('click', () => play('U'));
+  $('reset').addEventListener('click', () => { hist = []; render(); });
+  render();
+})();
+</script>
+
+</html>
