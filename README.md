@@ -4,6 +4,8 @@ Landing page concept for Gambit, an online game theory training platform: practi
 
 The hero is a live 3D constellation of chess pieces that rearranges into a coalition network, a game tree and a payoff matrix. Further down there's a playable sample lesson (a repeated tender against a tit-for-tat rival).
 
+Live version: https://ayratmak.github.io/gambit/
+
 ## Run it locally
 
 It's a single static HTML file with no build step and no dependencies. Fonts load from Google Fonts, so you need an internet connection.
