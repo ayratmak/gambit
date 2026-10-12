@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Render icons</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<style>body{font-family:Geist;background:#ccc;display:flex;flex-wrap:wrap;gap:16px;padding:16px;align-items:flex-start}canvas{background:#fff;max-width:100%}</style>
+</head>
+<body>
+<!-- Build tool, not deployed: renders favicon PNGs and the Open Graph image, then posts them to tools/receiver on :4818 -->
+<script src="../assets/core.js"></script>
+<script>
+(async () => {
+  await document.fonts.load('400 96px Newsreader'); await document.fonts.load('italic 400 96px Newsreader');
+  await document.fonts.load('500 20px Geist'); await document.fonts.load('500 16px "Geist Mono"');
+  const INK = '#17150F', CREAM = '#E9E7DF', BG = '#D8D7CF', ACC = '#2E5B45', MUTED = '#5C5950';
+  const out = [];
+  const save = async (name, cv) => { await fetch('http://localhost:4818/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, data: cv.toDataURL('image/png') }) }); out.push(name); };
+  const make = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; document.body.appendChild(c); return c; };
+
+  function icon(size, radius) {
+    const cv = make(size, size), c = cv.getContext('2d'), s = size / 100;
+    c.fillStyle = INK;
+    if (radius) { c.beginPath(); c.roundRect(0, 0, size, size, radius * s); c.fill(); } else c.fillRect(0, 0, size, size);
+    c.save(); c.scale(s, s); c.translate(12.5, 9); c.scale(.78, .78); c.fillStyle = CREAM; G.drawPiece(c, 'knight'); c.restore();
+    return cv;
+  }
+  await save('favicon-32.png', icon(32, 22));
+  await save('apple-touch-icon.png', icon(180, 0));   // iOS applies its own corner mask
+  await save('icon-192.png', icon(192, 22));
+  await save('icon-512.png', icon(512, 22));
+
+  // Open Graph image, 1200x630, in the landing page's light palette
+  const W = 1200, H = 630, cv = make(W, H), c = cv.getContext('2d');
+  c.fillStyle = BG; c.fillRect(0, 0, W, H);
+  // constellation of pieces on the right
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const types = ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn', 'pawn', 'pawn', 'knight', 'bishop'];
+  const nodes = [];
+  for (let i = 0; i < 26; i++) {
+    const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 210;
+    nodes.push({ x: 900 + Math.cos(a) * r * 1.15, y: 315 + Math.sin(a) * r, s: 30 + rnd() * 34, t: types[i % types.length], depth: .45 + rnd() * .55 });
+  }
+  nodes[0] = { x: 905, y: 300, s: 74, t: 'king', depth: 1, accent: true };
+  c.strokeStyle = INK; c.lineWidth = 1;
+  nodes.forEach((n, i) => {
+    const near = nodes.map((m, j) => [Math.hypot(m.x - n.x, m.y - n.y), j]).filter(d => d[1] !== i).sort((a, b) => a[0] - b[0]).slice(0, 2);
+    near.forEach(([, j]) => { c.globalAlpha = .16; c.beginPath(); c.moveTo(n.x, n.y); c.lineTo(nodes[j].x, nodes[j].y); c.stroke(); });
+  });
+  nodes.sort((a, b) => a.depth - b.depth).forEach(n => {
+    c.save(); c.globalAlpha = n.accent ? 1 : .35 + n.depth * .65; c.translate(n.x - n.s / 2, n.y - n.s * .56); c.scale(n.s / 100, n.s / 100);
+    c.fillStyle = n.accent ? ACC : INK; G.drawPiece(c, n.t); c.restore();
+  });
+  c.globalAlpha = 1;
+  // brand
+  c.save(); c.translate(72, 60); c.scale(.34, .34); c.fillStyle = INK; G.drawPiece(c, 'knight'); c.restore();
+  c.fillStyle = INK; c.font = '500 28px Geist'; c.textBaseline = 'middle'; c.fillText('Gambit', 112, 78);
+  // headline
+  c.textBaseline = 'alphabetic'; c.font = '400 108px Newsreader'; c.fillStyle = INK;
+  c.fillText('See the', 72, 268);
+  c.fillText('whole ', 72, 372);
+  const w = c.measureText('whole ').width;
+  c.font = 'italic 400 108px Newsreader'; c.fillStyle = ACC; c.fillText('board.', 72 + w, 372);
+  c.font = '400 32px Newsreader'; c.fillStyle = MUTED;
+  c.fillText('Free game theory courses, with a certificate.', 74, 440);
+  c.font = '500 18px "Geist Mono"'; c.fillStyle = MUTED; c.fillText('GAMBITSCHOOL.COM', 74, 560);
+  await save('og-image.png', cv);
+  document.title = 'done: ' + out.join(', ');
+})();
+</script>
+</body>
+</html>
