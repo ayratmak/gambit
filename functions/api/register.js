@@ -1,7 +1,7 @@
 // POST /api/register  { name, email, consent }
 // Creates or refreshes a sign-up. Marketing consent is only ever switched on here, never off;
 // withdrawing it will go through an unsubscribe link.
-const ALLOWED = ['https://ayratmak.github.io', 'http://localhost:4817', 'http://localhost:8000'];
+const ALLOWED = ['https://gambitschool.com', 'https://www.gambitschool.com', 'https://ayratmak.github.io', 'http://localhost:4817', 'http://localhost:8000'];
 
 function cors(request) {
   const origin = request.headers.get('Origin') || '';

@@ -66,7 +66,7 @@
   // Early access: every finished course is free for registered users. Flip to false to bring back £19 checkout.
   const FREE = true;
   // Sign-ups go to the Cloudflare Pages function. Same origin on Cloudflare, absolute URL elsewhere (GitHub Pages, localhost).
-  const API = /\.pages\.dev$/.test(location.hostname) || window.GAMBIT_SAME_ORIGIN ? '' : 'https://gambit-7w4.pages.dev';
+  const API = /(^|\.)gambitschool\.com$|\.pages\.dev$/.test(location.hostname) ? '' : 'https://gambitschool.com';
   async function register(user) {
     const res = await fetch(API + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(user) });
     const body = await res.json().catch(() => ({}));
