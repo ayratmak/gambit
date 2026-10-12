@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>My learning · Gambit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/app.css?v=2">
+<style>
+  main { padding-block: 44px 96px; display: grid; gap: 64px; }
+  .hello { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
+  .hello h1 { font-size: clamp(38px, 5vw, 64px); line-height: 1; letter-spacing: -.03em; }
+  .hello h1 em { color: var(--accent); }
+  .stats { display: flex; gap: 32px; }
+  .stats div { display: grid; gap: 2px; }
+  .stats b { font: 400 32px/1 var(--font-display); }
+  .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .sec-head h2 { font-size: 30px; letter-spacing: -.015em; }
+
+  .resume {
+    display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); border-radius: 12px; overflow: hidden;
+    background: var(--card-bg); color: var(--card-fg); border: 1px solid var(--line);
+  }
+  .resume-main { padding: clamp(24px, 3.5vw, 40px); display: grid; gap: 16px; align-content: start; }
+  .resume-main .mono { color: var(--card-muted); }
+  .resume-main h3 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -.02em; line-height: 1.05; }
+  .resume-main p { color: var(--card-muted); max-width: 46ch; }
+  .resume .bar { background: rgba(127, 127, 120, .3); }
+  .resume .btn.solid { background: var(--card-fg); color: var(--card-bg); }
+  .resume-side { border-left: 1px solid rgba(127, 127, 120, .25); padding: clamp(20px, 3vw, 32px); display: grid; gap: 4px; align-content: start; }
+  .resume-side .mono { color: var(--card-muted); margin-bottom: 8px; }
+  .up { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed rgba(127, 127, 120, .3); font-size: 14px; }
+  .up span:last-child { color: var(--card-muted); white-space: nowrap; }
+  .up.done span:first-child { color: var(--card-muted); text-decoration: line-through; text-decoration-color: rgba(127, 127, 120, .6); }
+  .resume canvas.big { width: 120px; height: 120px; justify-self: end; opacity: .9; }
+
+  .empty {
+    border: 1px dashed var(--line-strong); border-radius: 12px; padding: clamp(24px, 4vw, 40px);
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;
+  }
+  .empty h3 { font-size: 26px; }
+  .empty p { color: var(--muted); max-width: 52ch; margin-top: 6px; }
+
+  .certs { display: grid; gap: 10px; }
+  .cert-row {
+    display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 16px; align-items: center;
+    padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+  }
+  .cert-row canvas { width: 36px; height: 36px; }
+  .cert-row h4 { font-size: 20px; }
+  @media (max-width: 760px) {
+    .resume { grid-template-columns: 1fr; }
+    .resume-side { border-left: 0; border-top: 1px solid rgba(127, 127, 120, .25); }
+    .cert-row { grid-template-columns: 36px minmax(0, 1fr); }
+    .cert-row .btn { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap" id="main"></main>
+<script src="assets/core.js?v=2"></script>
+<script src="assets/data.js?v=2"></script>
+<script>
+(() => {
+  const { Store, esc, courseProgress, lessonsOf, playable } = G;
+  if (!G.requireUser()) return;
+  const tab = (location.hash || '#learning').slice(1);
+  G.header(tab);
+
+  const owned = COURSES.filter(c => Store.owns(c.id));
+  const certs = COURSES.filter(c => (Store.exam(c.id) || {}).passed);
+  const first = Store.user.name.split(' ')[0];
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const lessonsDone = COURSES.reduce((n, c) => n + courseProgress(c).done, 0);
+
+  const statusBadge = c => {
+    if (Store.owns(c.id)) return '<span class="badge owned">Owned</span>';
+    if (c.status === 'live') return `<span class="price num">£${c.price}</span>`;
+    if (c.status === 'preview') return '<span class="badge free">Free preview</span>';
+    return '<span class="badge">In production</span>';
+  };
+  const card = c => {
+    const p = courseProgress(c), n = lessonsOf(c).length;
+    return `<a class="ccard" href="course.html?c=${c.id}">
+      <div class="ccard-top"><canvas class="piece-icon" data-piece="${c.piece}" aria-hidden="true"></canvas><span class="mono">${esc(c.level)}</span></div>
+      <h3>${esc(c.title)}</h3>
+      <p>${esc(c.summary)}</p>
+      <div class="ccard-foot"><span class="mono num">${n} lessons · ${c.minutes} min</span>${statusBadge(c)}</div>
+      ${Store.owns(c.id) ? `<div class="bar" aria-label="${Math.round(p.pct * 100)}% complete"><i style="width:${p.pct * 100}%"></i></div>` : ''}
+    </a>`;
+  };
+
+  // Continue learning: the most recent owned course with work left, else the first owned one
+  let resume = '';
+  const active = owned.find(c => courseProgress(c).next) || owned[0];
+  if (active) {
+    const p = courseProgress(active), exam = Store.exam(active.id);
+    const ls = lessonsOf(active).filter(playable);
+    const idx = p.next ? ls.indexOf(p.next) : ls.length;
+    const upcoming = ls.slice(Math.max(0, idx - 1), idx + 3);
+    let cta, line;
+    if (p.next) { cta = `<a class="btn solid" href="lesson.html?c=${active.id}&l=${p.next.id}">${p.done ? 'Continue' : 'Start'}: ${esc(p.next.title)}</a>`; line = `Lesson ${idx + 1} of ${ls.length} · ${p.next.minutes} min`; }
+    else if (!exam || !exam.passed) { cta = `<a class="btn solid" href="lesson.html?c=${active.id}&exam=1">Take the final assessment</a>`; line = 'All lessons done. One assessment between you and your certificate.'; }
+    else { cta = `<a class="btn solid" href="certificate.html?c=${active.id}">View your certificate</a>`; line = 'Course complete.'; }
+    resume = `<section aria-labelledby="h-resume">
+      <div class="sec-head"><h2 id="h-resume">Continue learning</h2></div>
+      <div class="resume">
+        <div class="resume-main">
+          <span class="mono">${esc(active.title)}</span>
+          <h3>${p.next ? esc(p.next.title) : (exam && exam.passed ? 'Certificate earned.' : 'Final assessment')}</h3>
+          <p>${esc(line)}</p>
+          <div class="bar"><i style="width:${p.pct * 100}%"></i></div>
+          <span class="mono num">${p.done} of ${p.total} lessons complete</span>
+          <div>${cta}</div>
+        </div>
+        <div class="resume-side">
+          <span class="mono">Up next</span>
+          ${upcoming.map(l => `<div class="up ${Store.isDone(active.id, l.id) ? 'done' : ''}"><span>${esc(l.title)}</span><span class="num">${l.minutes} min</span></div>`).join('')}
+          ${!p.next ? '' : `<div class="up"><span>Final assessment</span><span>${active.exam ? active.exam.questions.length + ' questions' : ''}</span></div>`}
+        </div>
+      </div>
+    </section>`;
+  } else {
+    const f = COURSES[0], l = lessonsOf(f)[0];
+    resume = `<section aria-labelledby="h-resume">
+      <div class="sec-head"><h2 id="h-resume">Start here</h2></div>
+      <div class="empty">
+        <div><h3>Your first lesson is free.</h3><p>“${esc(l.title)}” takes ${l.minutes} minutes and shows you how every Gambit lesson works: short ideas, then a game to play.</p></div>
+        <a class="btn solid" href="lesson.html?c=${f.id}&l=${l.id}">Play the free lesson</a>
+      </div>
+    </section>`;
+  }
+
+  const certBlock = certs.length
+    ? `<div class="certs">${certs.map(c => { const e = Store.exam(c.id); return `<div class="cert-row">
+        <canvas class="piece-icon" data-piece="${c.piece}" data-tone="accent" aria-hidden="true"></canvas>
+        <div><h4>${esc(c.title)}</h4><span class="mono num">${new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · ${esc(e.certId)}</span></div>
+        <a class="btn ghost small" href="certificate.html?c=${c.id}">View certificate</a></div>`; }).join('')}</div>`
+    : `<div class="empty"><div><h3>No certificates yet.</h3><p>Finish every lesson in a course and pass its final assessment to earn one. Each certificate carries a unique ID.</p></div></div>`;
+
+  document.getElementById('main').innerHTML = `
+    <div class="hello">
+      <h1>${greet},<br><em>${esc(first)}.</em></h1>
+      <div class="stats">
+        <div><span class="mono">Courses</span><b class="num">${owned.length}</b></div>
+        <div><span class="mono">Lessons done</span><b class="num">${lessonsDone}</b></div>
+        <div><span class="mono">Certificates</span><b class="num">${certs.length}</b></div>
+      </div>
+    </div>
+    <div id="learning">${resume}</div>
+    ${owned.length ? `<section aria-labelledby="h-mine"><div class="sec-head"><h2 id="h-mine">My courses</h2></div><div class="grid">${owned.map(card).join('')}</div></section>` : ''}
+    <section id="catalogue" aria-labelledby="h-cat">
+      <div class="sec-head"><h2 id="h-cat">All courses</h2><span class="mono">£19 each · certificate included</span></div>
+      <div class="grid">${COURSES.filter(c => !Store.owns(c.id)).map(card).join('')}</div>
+    </section>
+    <section id="certificates" aria-labelledby="h-cert">
+      <div class="sec-head"><h2 id="h-cert">Certificates</h2></div>
+      ${certBlock}
+    </section>`;
+  G.paintIcons();
+  if (location.hash) { const t = document.querySelector(location.hash); t && t.scrollIntoView(); }
+})();
+</script>
+</body>
+</html>

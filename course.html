@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Course · Gambit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/app.css?v=2">
+<style>
+  main { padding-block: 36px 96px; }
+  .crumb { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  .crumb:hover { color: var(--ink); }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(28px, 5vw, 72px); align-items: start; }
+  .hero { display: grid; gap: 18px; padding-bottom: 36px; border-bottom: 1px solid var(--line); }
+  .hero canvas.big { width: 72px; height: 72px; }
+  .hero h1 { font-size: clamp(40px, 5.4vw, 68px); line-height: 1; letter-spacing: -.035em; }
+  .hero p { font: 350 20px/1.45 var(--font-display); color: var(--muted); max-width: 40ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+  .outcomes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; padding: 28px 0; border-bottom: 1px solid var(--line); list-style: none; margin: 0; }
+  .outcomes li { display: flex; gap: 10px; font-size: 15px; }
+  .outcomes li::before { content: ""; flex: none; width: 14px; height: 1px; background: var(--accent); margin-top: .75em; }
+
+  .syllabus { padding-top: 36px; display: grid; gap: 34px; }
+  .syllabus h2 { font-size: 30px; letter-spacing: -.015em; }
+  .mod { display: grid; gap: 4px; }
+  .mod-head { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 10px; }
+  .mod-head h3 { font-size: 22px; }
+  .lesson {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+    padding: 14px 14px; border-radius: 8px; border: 1px solid transparent; transition: background .2s, border-color .2s;
+  }
+  a.lesson:hover { background: var(--surface); border-color: var(--line); }
+  .lesson.locked { color: var(--muted); }
+  .dot { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: grid; place-items: center; font: 500 12px var(--font-mono); color: var(--muted); }
+  .lesson.done .dot { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .lesson .t { font-size: 16px; }
+  .lesson .sub { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+  .lesson .right { display: flex; gap: 8px; align-items: center; }
+  .lock { width: 14px; height: 14px; color: var(--muted); }
+  .finale { border-top: 1px dashed var(--line-strong); padding-top: 22px; display: grid; gap: 4px; }
+
+  .buy {
+    position: sticky; top: calc(env(safe-area-inset-top, 0px) + 88px);
+    border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); padding: 26px; display: grid; gap: 18px;
+  }
+  .buy .price-big { font: 400 54px/1 var(--font-display); letter-spacing: -.03em; }
+  .buy .price-big small { font: 400 14px var(--font-ui); color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+  .ring { display: flex; align-items: center; gap: 16px; }
+  .ring svg { width: 64px; height: 64px; transform: rotate(-90deg); }
+  .ring b { font: 400 30px var(--font-display); }
+  @media (max-width: 920px) {
+    .layout { grid-template-columns: 1fr; }
+    .buy { position: static; order: -1; }
+    .outcomes { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap" id="main"></main>
+<script src="assets/core.js?v=2"></script>
+<script src="assets/data.js?v=2"></script>
+<script>
+(() => {
+  const { Store, esc, lessonsOf, playable, courseProgress, canOpen } = G;
+  if (!G.requireUser()) return;
+  G.header('catalogue');
+  const course = COURSES.find(c => c.id === G.qs('c'));
+  const main = document.getElementById('main');
+  if (!course) { main.innerHTML = '<a class="crumb" href="app.html">← All courses</a><h1>We couldn\'t find that course.</h1>'; return; }
+  document.title = course.title + ' · Gambit';
+  const lockSvg = '<svg class="lock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-label="Locked"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>';
+
+  function render() {
+    const owns = Store.owns(course.id), p = courseProgress(course), exam = Store.exam(course.id);
+    let n = 0;
+    const mods = course.modules.map((m, mi) => `<div class="mod">
+      <div class="mod-head"><h3>${esc(m.title)}</h3><span class="mono">Module ${mi + 1}</span></div>
+      ${m.lessons.map(l => {
+        n++;
+        const done = Store.isDone(course.id, l.id), open = canOpen(course, l), ready = playable(l);
+        const tag = !ready ? '<span class="badge">In production</span>' : (!owns && l.preview ? '<span class="badge free">Free preview</span>' : '');
+        const inner = `<span class="dot num">${done ? '✓' : n}</span>
+          <span><span class="t">${esc(l.title)}</span><span class="sub"><span class="mono">${esc(l.kind)}</span><span class="mono num">${l.minutes} min</span></span></span>
+          <span class="right">${tag}${!open && ready ? lockSvg : ''}</span>`;
+        return open ? `<a class="lesson ${done ? 'done' : ''}" href="lesson.html?c=${course.id}&l=${l.id}">${inner}</a>`
+                    : `<div class="lesson locked">${inner}</div>`;
+      }).join('')}
+    </div>`).join('');
+
+    const allDone = p.total > 0 && p.done === p.total && course.status === 'live';
+    const finale = course.exam ? `<div class="mod finale">
+      <div class="mod-head"><h3>Final assessment and certificate</h3><span class="mono">${course.exam.questions.length} questions · pass ${course.exam.pass}</span></div>
+      ${allDone && owns
+        ? `<a class="lesson ${exam && exam.passed ? 'done' : ''}" href="lesson.html?c=${course.id}&exam=1"><span class="dot">${exam && exam.passed ? '✓' : '★'}</span><span><span class="t">Final assessment</span><span class="sub"><span class="mono">${exam ? 'Best: ' + exam.score + ' of ' + exam.total : 'Unlocked'}</span></span></span><span class="right"></span></a>`
+        : `<div class="lesson locked"><span class="dot">★</span><span><span class="t">Final assessment</span><span class="sub"><span class="mono">Unlocks when every lesson is complete</span></span></span><span class="right">${lockSvg}</span></div>`}
+      ${exam && exam.passed ? `<a class="lesson done" href="certificate.html?c=${course.id}"><span class="dot">✓</span><span><span class="t">Your certificate</span><span class="sub"><span class="mono">${esc(exam.certId)}</span></span></span><span class="right"></span></a>` : ''}
+    </div>` : '';
+
+    const C = 2 * Math.PI * 26;
+    let side;
+    if (owns) {
+      const nextHref = p.next ? `lesson.html?c=${course.id}&l=${p.next.id}` : (exam && exam.passed ? `certificate.html?c=${course.id}` : `lesson.html?c=${course.id}&exam=1`);
+      const nextLabel = p.next ? (p.done ? 'Continue' : 'Start the course') : (exam && exam.passed ? 'View certificate' : 'Take the assessment');
+      side = `<div class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p.pct)}"/></svg>
+        <div><b class="num">${Math.round(p.pct * 100)}%</b><div class="mono num">${p.done} of ${p.total} lessons</div></div></div>
+        <a class="btn solid block" href="${nextHref}">${nextLabel}</a>
+        <span class="badge owned" style="justify-self:start">You own this course</span>`;
+    } else if (course.status === 'live') {
+      const pv = lessonsOf(course).find(l => l.preview);
+      side = `<div class="price-big num">£${course.price}<small>one-off</small></div>
+        <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li><li>Final assessment</li><li>Certificate of completion</li><li>Lifetime access</li></ul>
+        <button class="btn solid block" id="buyBtn">Buy course · £${course.price}</button>
+        ${pv ? `<a class="btn ghost block" href="lesson.html?c=${course.id}&l=${pv.id}">Try the free lesson</a>` : ''}`;
+    } else {
+      const pv = lessonsOf(course).find(l => l.preview && playable(l));
+      side = `<span class="mono">${course.status === 'preview' ? 'Launching soon' : 'In production'}</span>
+        <div class="price-big num">£${course.price}<small>at launch</small></div>
+        <p class="muted" style="font-size:14px">This course is still being written with our practitioners. ${pv ? 'Its first lesson is open to try now.' : 'The syllabus below is a draft.'}</p>
+        ${pv ? `<a class="btn solid block" href="lesson.html?c=${course.id}&l=${pv.id}">Play the preview lesson</a>` : ''}`;
+    }
+
+    main.innerHTML = `<a class="crumb" href="app.html#catalogue">← All courses</a>
+      <div class="layout">
+        <div>
+          <div class="hero">
+            <canvas class="piece-icon big" data-piece="${course.piece}" aria-hidden="true"></canvas>
+            <h1>${esc(course.title)}</h1>
+            <p>${esc(course.summary)}</p>
+            <div class="meta"><span class="badge">${esc(course.level)}</span><span class="badge num">${lessonsOf(course).length} lessons</span><span class="badge num">${course.minutes} min</span><span class="badge">Certificate</span></div>
+          </div>
+          ${course.outcomes.length ? `<ul class="outcomes">${course.outcomes.map(o => `<li>${esc(o)}</li>`).join('')}</ul>` : ''}
+          <div class="syllabus"><h2>What's inside</h2>${mods}${finale}</div>
+        </div>
+        <aside class="buy">${side}</aside>
+      </div>`;
+    G.paintIcons();
+    const b = document.getElementById('buyBtn');
+    b && b.addEventListener('click', () => G.checkout(course, render));
+  }
+  render();
+  if (G.qs('buy') === '1' && !Store.owns(course.id) && course.status === 'live') G.checkout(course, render);
+})();
+</script>
+</body>
+</html>

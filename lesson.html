@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Lesson · Gambit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/app.css?v=2">
+<style>
+  body { display: grid; grid-template-rows: auto 1fr auto; min-height: 100vh; }
+  .ltop { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .ltop-in { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 16px; align-items: center; height: 64px; }
+  .x { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-strong); display: grid; place-items: center; color: var(--muted); }
+  .x:hover { color: var(--ink); background: var(--surface); }
+  .segs { display: flex; gap: 4px; }
+  .segs i { flex: 1; height: 5px; border-radius: 5px; background: var(--line); transition: background .4s; }
+  .segs i.on { background: var(--accent); }
+  .segs i.cur { background: var(--ink); }
+
+  .stage { width: min(760px, 100%); margin-inline: auto; padding: clamp(28px, 5vw, 56px) var(--gutter) 40px; }
+  .step { display: grid; gap: 22px; animation: rise .45s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .step h2 { font-size: clamp(32px, 4.4vw, 46px); line-height: 1.04; letter-spacing: -.025em; }
+  .step .body { display: grid; gap: 16px; }
+  .step .body p { font: 350 clamp(18px, 2vw, 21px)/1.5 var(--font-display); }
+  .step .body b { font-weight: 550; }
+  .prompt { font-size: 16px; color: var(--muted); max-width: 60ch; }
+  .q { font: 400 clamp(22px, 2.6vw, 28px)/1.25 var(--font-display); letter-spacing: -.01em; }
+
+  .opts { display: grid; gap: 10px; }
+  .opt {
+    text-align: left; padding: 16px 18px; border-radius: 10px; border: 1.5px solid var(--line-strong); background: var(--surface);
+    cursor: pointer; font-size: 16px; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start;
+    transition: border-color .2s, background .2s, transform .15s;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--ink); }
+  .opt:active:not(:disabled) { transform: scale(.995); }
+  .opt .k { width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--line-strong); display: grid; place-items: center; font: 500 11px var(--font-mono); color: var(--muted); }
+  .opt.sel { border-color: var(--ink); background: var(--raised); }
+  .opt.good { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.good .k { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .opt.bad { border-color: var(--bad); background: var(--bad-soft); }
+  .opt.bad .k { background: var(--bad); border-color: var(--bad); color: var(--bg); }
+  .opt:disabled { cursor: default; }
+
+  .sort { display: grid; gap: 10px; }
+  .sitem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 10px; border: 1.5px solid var(--line-strong); background: var(--surface); }
+  .sitem .why { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+  .sitem.good { border-color: var(--accent); }
+  .sitem.bad { border-color: var(--bad); }
+  .sbtns { display: flex; gap: 6px; }
+  .sbtns button { border: 1px solid var(--line-strong); background: var(--raised); border-radius: 999px; padding: 7px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .sbtns button:hover:not(:disabled) { border-color: var(--ink); }
+  .sbtns button.pick { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .sbtns button.wrong { background: var(--bad); border-color: var(--bad); color: var(--bg); }
+
+  .mx-wrap { overflow-x: auto; }
+  .mx { border-collapse: separate; border-spacing: 6px; width: 100%; min-width: 320px; font-variant-numeric: tabular-nums; }
+  .mx th { font: 500 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 4px 6px; text-align: left; }
+  .mx td { position: relative; height: 84px; padding: 0; border-radius: 8px; }
+  .mx td > button, .mx td > div {
+    width: 100%; height: 100%; display: flex; align-items: flex-end; padding: 12px 14px; border-radius: 8px;
+    border: 1.5px dashed var(--line-strong); background: transparent; text-align: left; transition: background .2s, border-color .2s;
+  }
+  .mx td > button { cursor: pointer; }
+  .mx td > button:hover:not(:disabled) { border-style: solid; border-color: var(--ink); }
+  .mx .pay { font: 400 28px var(--font-display); }
+  .mx .pay i { font-style: normal; color: var(--muted); }
+  .mx .on { border-style: solid; border-color: var(--ink); background: var(--raised); }
+  .mx .hl { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+  .mx .ok { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+  .mx .no { border-style: solid; border-color: var(--bad); background: var(--bad-soft); }
+  .mx .miss { border-style: dashed; border-color: var(--accent); border-width: 2px; }
+  .mx .flag { position: absolute; top: 9px; right: 11px; font: 500 10px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .mx-note { font-size: 13px; color: var(--muted); }
+  .explore-log { min-height: 3.2em; font: 350 19px/1.45 var(--font-display); }
+
+  .game { border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); padding: clamp(16px, 3vw, 26px); display: grid; gap: 20px; }
+  .game-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .score { display: flex; gap: 24px; }
+  .score div { display: grid; }
+  .score b { font: 400 34px/1 var(--font-display); }
+  .moves { display: flex; flex-wrap: wrap; gap: 10px; }
+  .moves .btn { flex: 1 1 150px; }
+  .track { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border-radius: 4px; display: grid; place-items: center; font: 500 11px var(--font-mono); color: var(--muted); border: 1px solid var(--line); }
+  .sq:nth-child(even) { background: var(--line); }
+  .sq.done { color: var(--ink); }
+  .sq.now { border-color: var(--accent); color: var(--accent); }
+  .debrief { font: 350 18px/1.5 var(--font-display); min-height: 2.8em; }
+  .debrief strong { font-weight: 550; }
+
+  .points { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; counter-reset: p; }
+  .points li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 18px; border: 1px dashed var(--line-strong); border-radius: 10px; font: 350 19px/1.4 var(--font-display); counter-increment: p; }
+  .points li::before { content: counter(p); font: 400 26px/1 var(--font-display); color: var(--accent); }
+
+  .done-card { text-align: left; display: grid; gap: 22px; }
+  .done-card canvas { width: 96px; height: 96px; }
+  .done-card h2 { font-size: clamp(40px, 6vw, 64px); }
+  .done-card h2 em { color: var(--accent); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .tile { border: 1px solid var(--line); border-radius: 10px; padding: 16px; background: var(--surface); display: grid; gap: 4px; }
+  .tile b { font: 400 30px/1 var(--font-display); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .lfoot { position: sticky; bottom: 0; background: var(--bg); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); transition: background .3s; }
+  .lfoot.good { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); }
+  .lfoot.bad { background: color-mix(in srgb, var(--bad) 10%, var(--bg)); }
+  .lfoot-in { width: min(760px, 100%); margin-inline: auto; padding: 16px var(--gutter); display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .fb { font-size: 15px; min-width: 0; }
+  .fb strong { display: block; font-size: 16px; }
+  .lfoot.good .fb strong { color: var(--accent); }
+  .lfoot.bad .fb strong { color: var(--bad); }
+  .lfoot .btn { min-width: 150px; }
+  @media (max-width: 560px) {
+    .sitem { grid-template-columns: 1fr; }
+    .lfoot-in { flex-direction: column; align-items: stretch; }
+    .mx { min-width: 0; border-spacing: 4px; }
+    .mx th { font-size: 9.5px; letter-spacing: .03em; padding: 2px; }
+    .mx td { height: 64px; }
+    .mx td > button, .mx td > div { padding: 8px 10px; }
+    .mx .pay { font-size: 21px; }
+    .sq { font-size: 8.5px; letter-spacing: -.02em; }
+  }
+</style>
+</head>
+<body>
+<header class="ltop"><div class="wrap ltop-in">
+  <a class="x" id="close" href="app.html" aria-label="Leave lesson">✕</a>
+  <div class="segs" id="segs" aria-hidden="true"></div>
+  <span class="mono num" id="count"></span>
+</div></header>
+<main class="stage" id="stage" aria-live="polite"></main>
+<footer class="lfoot" id="foot"><div class="lfoot-in">
+  <div class="fb" id="fb"></div>
+  <button class="btn solid" id="next" disabled>Continue</button>
+</div></footer>
+
+<script src="assets/core.js?v=2"></script>
+<script src="assets/data.js?v=2"></script>
+<script>
+(() => {
+  const { Store, esc, lessonsOf, playable, canOpen } = G;
+  if (!G.requireUser()) return;
+  const course = COURSES.find(c => c.id === G.qs('c'));
+  const examMode = G.qs('exam') === '1';
+  const lesson = course && lessonsOf(course).find(l => l.id === G.qs('l'));
+  const stage = document.getElementById('stage'), foot = document.getElementById('foot'), fb = document.getElementById('fb'), nextBtn = document.getElementById('next');
+  const back = course ? 'course.html?c=' + course.id : 'app.html';
+  document.getElementById('close').href = back;
+
+  // Access rules
+  if (!course || (!examMode && (!lesson || !playable(lesson)))) { stage.innerHTML = `<h2>We couldn't find that lesson.</h2><p><a class="btn ghost" href="${back}">Back</a></p>`; foot.hidden = true; return; }
+  if (examMode && (!Store.owns(course.id) || !course.exam)) { location.replace(back); return; }
+  if (!examMode && !canOpen(course, lesson)) { location.replace(back + '&buy=1'); return; }
+
+  const steps = examMode ? course.exam.questions.map(q => ({ t: 'exam', ...q })) : lesson.steps;
+  document.title = (examMode ? 'Final assessment' : lesson.title) + ' · Gambit';
+  let i = 0, firstTry = 0, graded = 0, examScore = 0;
+  const segs = document.getElementById('segs');
+  segs.innerHTML = steps.map(() => '<i></i>').join('');
+
+  function setFoot(state, title, text, label) {
+    foot.className = 'lfoot' + (state ? ' ' + state : '');
+    fb.innerHTML = title ? `<strong>${esc(title)}</strong>${text ? `<span>${text}</span>` : ''}` : (text || '');
+    nextBtn.textContent = label || 'Continue';
+  }
+  const ready = (on = true) => { nextBtn.disabled = !on; };
+
+  /* ---------- Shared payoff matrix ---------- */
+  function matrix(m, { clickable = false, highlightCol = null } = {}) {
+    const wrap = document.createElement('div'); wrap.className = 'mx-wrap';
+    const tag = clickable ? 'button' : 'div';
+    wrap.innerHTML = `<table class="mx"><thead><tr><th></th>${m.cols.map(c => `<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>
+      ${m.rows.map((r, ri) => `<tr><th scope="row">${esc(r)}</th>${m.cols.map((c, ci) => `<td><${tag} data-r="${ri}" data-c="${ci}" class="${highlightCol === ci ? 'hl' : ''}" ${clickable ? `aria-label="${esc(r)}, ${esc(c)}"` : ''}><span class="pay">${m.pay[ri][ci][0]}<i>, ${m.pay[ri][ci][1]}</i></span></${tag}></td>`).join('')}</tr>`).join('')}
+      </tbody></table>${m.unit ? `<p class="mx-note">Your payoff first, theirs second · ${esc(m.unit)}</p>` : ''}`;
+    return wrap;
+  }
+  const nash = m => {
+    const out = [];
+    m.pay.forEach((row, r) => row.forEach((cell, c) => {
+      const bestRow = m.pay.every(rr => rr[c][0] <= cell[0]);
+      const bestCol = row.every(cc => cc[1] <= cell[1]);
+      if (bestRow && bestCol) out.push(r + '-' + c);
+    }));
+    return out;
+  };
+
+  /* ---------- Step renderers ---------- */
+  const R = {};
+  R.read = (s, el) => {
+    el.innerHTML = `<h2>${esc(s.title)}</h2><div class="body">${s.body.map(p => `<p>${p}</p>`).join('')}</div>`;
+    if (s.figure) el.appendChild(matrix(s.figure));
+    setFoot('', '', ''); ready();
+  };
+  R.summary = (s, el) => {
+    el.innerHTML = `<span class="mono">Key ideas</span><h2>What to remember</h2><ol class="points">${s.points.map(p => `<li>${esc(p)}</li>`).join('')}</ol>`;
+    setFoot('', '', ''); ready();
+  };
+  R.choice = (s, el) => {
+    el.innerHTML = `${s.title ? `<span class="mono">${esc(s.title)}</span>` : ''}<p class="q">${esc(s.q)}</p>`;
+    if (s.figure) el.appendChild(matrix(s.figure, { highlightCol: s.highlightCol ?? null }));
+    const box = document.createElement('div'); box.className = 'opts';
+    box.innerHTML = s.options.map((o, k) => `<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span><span>${esc(o.text)}</span></button>`).join('');
+    el.appendChild(box);
+    let tries = 0;
+    box.addEventListener('click', e => {
+      const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      const o = s.options[+b.dataset.k]; tries++;
+      if (o.ok) {
+        b.classList.add('good'); box.querySelectorAll('.opt').forEach(x => x.disabled = true);
+        if (tries === 1) firstTry++;
+        graded++;
+        setFoot('good', tries === 1 ? 'Correct' : 'Got there', esc(o.why)); ready();
+      } else {
+        b.classList.add('bad'); b.disabled = true;
+        setFoot('bad', 'Not quite', esc(o.why) + ' Try another answer.'); ready(false);
+      }
+    });
+    setFoot('', '', 'Pick an answer.'); ready(false);
+  };
+  R.sort = (s, el) => {
+    el.innerHTML = `<span class="mono">${esc(s.title)}</span><p class="q">${esc(s.prompt)}</p>`;
+    const box = document.createElement('div'); box.className = 'sort';
+    let solved = 0, misses = 0;
+    s.items.forEach((it, k) => {
+      const row = document.createElement('div'); row.className = 'sitem';
+      row.innerHTML = `<span>${esc(it.text)}</span><span class="sbtns">${s.buckets.map((b, bi) => `<button data-b="${bi}">${esc(b)}</button>`).join('')}</span><span class="why" hidden></span>`;
+      row.querySelector('.sbtns').addEventListener('click', e => {
+        const btn = e.target.closest('button'); if (!btn || btn.disabled) return;
+        const why = row.querySelector('.why');
+        if (+btn.dataset.b === it.bucket) {
+          btn.classList.add('pick'); row.classList.remove('bad'); row.classList.add('good');
+          row.querySelectorAll('button').forEach(x => x.disabled = true);
+          why.hidden = false; why.textContent = it.why; solved++;
+          if (solved === s.items.length) {
+            graded++; if (!misses) firstTry++;
+            setFoot('good', misses ? 'All sorted' : 'All correct first time', ''); ready();
+          }
+        } else {
+          misses++; btn.classList.add('wrong'); btn.disabled = true; row.classList.add('bad');
+          why.hidden = false; why.textContent = 'Not quite. ' + it.why;
+        }
+      });
+      box.appendChild(row);
+    });
+    el.appendChild(box);
+    setFoot('', '', `Sort all ${s.items.length} to continue.`); ready(false);
+  };
+  R.matrix = (s, el) => {
+    el.innerHTML = `<span class="mono">${esc(s.title)}</span><p class="q">${esc(s.prompt)}</p>`;
+    const mx = matrix(s, { clickable: true }); el.appendChild(mx);
+    const cells = [...mx.querySelectorAll('button[data-r]')];
+    if (s.task === 'explore') {
+      const log = document.createElement('p'); log.className = 'explore-log'; log.textContent = 'Tap a cell.'; el.appendChild(log);
+      const seen = new Set();
+      cells.forEach(b => b.addEventListener('click', () => {
+        const r = +b.dataset.r, c = +b.dataset.c, [a, t] = s.pay[r][c];
+        cells.forEach(x => x.classList.remove('on')); b.classList.add('on'); seen.add(r + '-' + c);
+        log.innerHTML = `${esc(s.rows[r])} and ${esc(s.cols[c].replace(/^They/, 'they'))}: <b>you get ${a}</b>, they get ${t}.`;
+        const left = 3 - seen.size;
+        if (left > 0) setFoot('', '', `Tap ${left} more cell${left > 1 ? 's' : ''}.`);
+        else { setFoot('good', 'You can read a payoff matrix', 'Your number first, theirs second.'); ready(); }
+      }));
+      setFoot('', '', 'Tap 3 cells.'); ready(false);
+    } else {
+      const picked = new Set(), answer = nash(s);
+      cells.forEach(b => b.addEventListener('click', () => {
+        const key = b.dataset.r + '-' + b.dataset.c;
+        picked.has(key) ? picked.delete(key) : picked.add(key);
+        b.classList.toggle('on', picked.has(key));
+        nextBtn.disabled = picked.size === 0;
+      }));
+      let checked = false;
+      setFoot('', '', 'Select one or more cells, then check.', 'Check'); ready(false);
+      R._check = () => {
+        if (checked) return false;
+        checked = true; graded++;
+        const right = answer.length === picked.size && answer.every(k => picked.has(k));
+        if (right) firstTry++;
+        cells.forEach(b => {
+          const k = b.dataset.r + '-' + b.dataset.c; b.disabled = true; b.classList.remove('on');
+          if (picked.has(k)) b.classList.add(answer.includes(k) ? 'ok' : 'no');
+          else if (answer.includes(k)) b.classList.add('miss');
+          if (answer.includes(k)) b.insertAdjacentHTML('beforeend', '<span class="flag">Nash</span>');
+        });
+        setFoot(right ? 'good' : 'bad', right ? 'Spot on' : 'Not quite', esc(s.explain));
+        return true;
+      };
+    }
+  };
+  R.repeated = (s, el) => {
+    el.innerHTML = `<span class="mono">${esc(s.title)}</span><p class="q">${esc(s.prompt)}</p>`;
+    const g = document.createElement('div'); g.className = 'game';
+    g.innerHTML = `<div class="game-top"><div class="score"><div><span class="mono">You</span><b class="num" id="sy">0</b></div><div><span class="mono">Rival</span><b class="num" id="st">0</b></div></div><span class="mono" id="rl"></span></div>`;
+    const mx = matrix(s); g.appendChild(mx);
+    g.insertAdjacentHTML('beforeend', `<div class="moves"><button class="btn solid" data-m="0">${esc(s.moves[0])}</button><button class="btn ghost" data-m="1">${esc(s.moves[1])}</button></div>
+      <div class="track" style="grid-template-columns:repeat(${s.rounds},1fr)">${Array.from({ length: s.rounds }, (_, k) => `<div class="sq">${esc(s.roundName)}${k + 1}</div>`).join('')}</div>
+      <p class="debrief" id="db">${esc(s.moves[1])} is tempting: it pays more in any single round. Does that hold when you meet again tomorrow?</p>`);
+    el.appendChild(g);
+    const hist = [], tds = [...mx.querySelectorAll('[data-r]')], sqs = [...g.querySelectorAll('.sq')];
+    const moveBtns = [...g.querySelectorAll('[data-m]')];
+    const draw = () => {
+      let y = 0, t = 0; hist.forEach(([a, b]) => { y += s.pay[a][b][0]; t += s.pay[a][b][1]; });
+      g.querySelector('#sy').textContent = y; g.querySelector('#st').textContent = t;
+      tds.forEach(td => td.classList.remove('hl'));
+      const last = hist[hist.length - 1];
+      if (last) tds.find(td => +td.dataset.r === last[0] && +td.dataset.c === last[1]).classList.add('hl');
+      sqs.forEach((q, k) => { q.className = 'sq' + (k < hist.length ? ' done' : '') + (k === hist.length ? ' now' : ''); q.textContent = k < hist.length ? s.short[hist[k][0]] + '·' + s.short[hist[k][1]] : s.roundName + (k + 1); });
+      const over = hist.length >= s.rounds;
+      moveBtns.forEach(b => b.disabled = over);
+      g.querySelector('#rl').textContent = over ? 'Game over' : `${s.roundName === 'Q' ? 'Quarter' : s.roundName} ${hist.length + 1} of ${s.rounds}`;
+      const db = g.querySelector('#db');
+      if (last && !over) {
+        const k = last[0] * 2 + last[1];
+        db.textContent = ['You both held back. Healthy payoffs all round.', 'Your rival undercut you and took the round.', 'You undercut and took the round.', 'Price war. You both earn little.'][k];
+      }
+      if (over) {
+        const best = s.rounds * s.pay[0][0][0], cuts = hist.filter(h => h[0] === 1).length, lastCut = hist[s.rounds - 1][0] === 1, mid = cuts - (lastCut ? 1 : 0);
+        let msg = `<strong>Your rival played tit-for-tat:</strong> co-operate first, then copy your previous move. `;
+        if (!cuts) msg += `You co-operated every round and earned ${y}, the most anyone can earn against it.`;
+        else {
+          msg += `You earned ${y}, against ${best} for co-operating every round. `;
+          if (mid) msg += y < best ? 'Each undercut won one round, then your rival matched you and you both lost out. ' : 'Your mid-game undercuts each won a round and lost the next, so they only broke even. ';
+          if (lastCut) msg += 'Undercutting in the final round is the one move tit-for-tat can never punish.';
+        }
+        db.innerHTML = msg;
+        graded++; if (y >= best) firstTry++;
+        setFoot('good', 'Game complete', ''); ready();
+      }
+    };
+    moveBtns.forEach(b => b.addEventListener('click', () => {
+      if (hist.length >= s.rounds) return;
+      const rival = hist.length ? hist[hist.length - 1][0] : 0;
+      hist.push([+b.dataset.m, rival]); draw();
+    }));
+    draw();
+    setFoot('', '', `Play all ${s.rounds} rounds.`); ready(false);
+  };
+  R.exam = (s, el) => {
+    el.innerHTML = `<span class="mono">Question ${i + 1} of ${steps.length}</span><p class="q">${esc(s.q)}</p>`;
+    const box = document.createElement('div'); box.className = 'opts';
+    box.innerHTML = s.options.map((o, k) => `<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span><span>${esc(o)}</span></button>`).join('');
+    el.appendChild(box);
+    let pick = null, checked = false;
+    box.addEventListener('click', e => {
+      const b = e.target.closest('.opt'); if (!b || checked) return;
+      box.querySelectorAll('.opt').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); pick = +b.dataset.k; ready();
+    });
+    setFoot('', '', 'Choose an answer, then check it.', 'Check'); ready(false);
+    R._check = () => {
+      if (checked) return false;
+      checked = true;
+      const right = pick === s.answer; if (right) examScore++;
+      box.querySelectorAll('.opt').forEach((x, k) => { x.disabled = true; x.classList.remove('sel'); if (k === s.answer) x.classList.add('good'); else if (k === pick) x.classList.add('bad'); });
+      setFoot(right ? 'good' : 'bad', right ? 'Correct' : 'Incorrect', esc(s.why));
+      return true;
+    };
+  };
+
+  /* ---------- Flow ---------- */
+  function show() {
+    R._check = null;
+    const s = steps[i];
+    [...segs.children].forEach((x, k) => x.className = k < i ? 'on' : k === i ? 'cur' : '');
+    document.getElementById('count').textContent = `${i + 1} / ${steps.length}`;
+    const el = document.createElement('section'); el.className = 'step';
+    stage.innerHTML = ''; stage.appendChild(el);
+    R[s.t](s, el);
+    window.scrollTo({ top: 0 });
+  }
+  nextBtn.addEventListener('click', () => {
+    if (R._check && R._check()) { nextBtn.textContent = i === steps.length - 1 ? 'Finish' : 'Continue'; return; }
+    if (i < steps.length - 1) { i++; show(); } else finish();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' && !nextBtn.disabled && document.activeElement.tagName !== 'BUTTON') nextBtn.click(); });
+
+  function finish() {
+    [...segs.children].forEach(x => x.className = 'on');
+    foot.hidden = true;
+    const el = document.createElement('section'); el.className = 'step done-card';
+    if (examMode) {
+      const total = steps.length, passed = examScore >= course.exam.pass;
+      const rec = Store.recordExam(course.id, examScore, total, passed);
+      el.innerHTML = passed
+        ? `<canvas class="piece-icon" data-piece="king" data-tone="accent" aria-hidden="true"></canvas>
+           <span class="mono">Final assessment</span><h2>You <em>passed.</em></h2>
+           <div class="tiles"><div class="tile"><span class="mono">Score</span><b class="num">${examScore} / ${total}</b></div><div class="tile"><span class="mono">Pass mark</span><b class="num">${course.exam.pass} / ${total}</b></div></div>
+           <div class="actions"><a class="btn accent" href="certificate.html?c=${course.id}">Get your certificate</a><a class="btn ghost" href="app.html">Back to my learning</a></div>`
+        : `<canvas class="piece-icon" data-piece="pawn" aria-hidden="true"></canvas>
+           <span class="mono">Final assessment</span><h2>Not this time.</h2>
+           <p class="prompt">You scored ${examScore} of ${total}. You need ${course.exam.pass} to pass. Every question comes with an explanation, so a second attempt usually goes better. ${rec.passed ? 'Your earlier pass still stands.' : ''}</p>
+           <div class="actions"><a class="btn solid" href="lesson.html?c=${course.id}&exam=1">Try again</a><a class="btn ghost" href="course.html?c=${course.id}">Review lessons</a></div>`;
+    } else {
+      Store.complete(course.id, lesson.id);
+      const ls = lessonsOf(course).filter(playable), idx = ls.indexOf(lesson), nxt = ls[idx + 1];
+      const owns = Store.owns(course.id), allDone = ls.every(l => Store.isDone(course.id, l.id));
+      let actions;
+      if (nxt && canOpen(course, nxt)) actions = `<a class="btn solid" href="lesson.html?c=${course.id}&l=${nxt.id}">Next: ${esc(nxt.title)}</a>`;
+      else if (!owns && course.status === 'live') actions = `<button class="btn solid" id="unlock">Unlock the full course · £${course.price}</button>`;
+      else if (owns && allDone && course.exam) actions = `<a class="btn accent" href="lesson.html?c=${course.id}&exam=1">Take the final assessment</a>`;
+      else actions = '';
+      actions += `<a class="btn ghost" href="course.html?c=${course.id}">Course overview</a>`;
+      el.innerHTML = `<canvas class="piece-icon" data-piece="${course.piece}" data-tone="accent" aria-hidden="true"></canvas>
+        <span class="mono">${esc(course.title)}</span><h2>Lesson <em>complete.</em></h2>
+        <div class="tiles">
+          <div class="tile"><span class="mono">Lesson</span><b>${esc(lesson.title)}</b></div>
+          <div class="tile"><span class="mono">Right first time</span><b class="num">${graded ? `${firstTry} / ${graded}` : 'n/a'}</b></div>
+        </div>
+        ${!owns && course.status === 'live' ? `<p class="prompt">That was the free lesson. The full course has ${lessonsOf(course).length} lessons, a final assessment and a certificate, for a one-off £${course.price}.</p>` : ''}
+        <div class="actions">${actions}</div>`;
+    }
+    stage.innerHTML = ''; stage.appendChild(el); G.paintIcons(el);
+    const u = document.getElementById('unlock');
+    u && u.addEventListener('click', () => G.checkout(course, () => { const ls = lessonsOf(course).filter(playable); const nx = ls.find(l => !Store.isDone(course.id, l.id)); location.href = nx ? `lesson.html?c=${course.id}&l=${nx.id}` : `course.html?c=${course.id}`; }));
+  }
+  show();
+})();
+</script>
+</body>
+</html>

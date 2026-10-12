@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Certificate · Gambit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/app.css?v=2">
+<style>
+  main { padding-block: 36px 96px; display: grid; gap: 24px; justify-items: center; }
+  .bar-top { width: min(1000px, 100%); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .bar-top .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .crumb { color: var(--muted); font-size: 14px; }
+  .crumb:hover { color: var(--ink); }
+
+  /* The certificate always prints on paper, so it keeps its own light palette in both themes */
+  .cert {
+    --paper: #F3F1EA; --cink: #17150F; --cmuted: #6A665C; --cline: rgba(23, 21, 15, .22); --cacc: #2E5B45;
+    width: min(1000px, 100%); aspect-ratio: 1.414; container-type: inline-size;
+    background: var(--paper); color: var(--cink); position: relative; border-radius: 4px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .18), 0 2px 6px rgba(0, 0, 0, .08);
+    padding: 4.4cqw; display: grid;
+  }
+  .frame { position: relative; border: 1px solid var(--cline); outline: 1px solid var(--cline); outline-offset: -.9cqw; padding: 4.2cqw 5cqw 3.4cqw; display: grid; grid-template-rows: auto 1fr auto; }
+  .frame::before, .frame::after { content: ""; position: absolute; width: 2.4cqw; height: 2.4cqw; border: 1.5px solid var(--cink); }
+  .frame::before { left: -.5cqw; top: -.5cqw; border-right: 0; border-bottom: 0; }
+  .frame::after { right: -.5cqw; bottom: -.5cqw; border-left: 0; border-top: 0; }
+  .c-head { display: flex; justify-content: space-between; align-items: center; }
+  .c-brand { display: flex; align-items: center; gap: 1cqw; font: 500 1.9cqw var(--font-ui); }
+  .c-brand canvas { width: 2.6cqw; height: 2.6cqw; }
+  .c-mono { font: 500 1.05cqw var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--cmuted); }
+  .c-body { display: grid; align-content: center; gap: 1.4cqw; }
+  .c-title { font: 400 1.7cqw var(--font-display); letter-spacing: .02em; color: var(--cmuted); }
+  .c-name { font: italic 400 6.6cqw/1 var(--font-display); letter-spacing: -.03em; color: var(--cink); overflow-wrap: anywhere; }
+  .c-line { width: 46%; height: 1px; background: var(--cline); }
+  .c-course { font: 400 3cqw/1.1 var(--font-display); letter-spacing: -.015em; }
+  .c-course em { color: var(--cacc); font-style: normal; }
+  .c-desc { font: 350 1.55cqw/1.45 var(--font-display); color: var(--cmuted); max-width: 62%; }
+  .c-foot { display: grid; grid-template-columns: repeat(3, auto) 1fr; gap: 4cqw; align-items: end; }
+  .c-foot div { display: grid; gap: .5cqw; }
+  .c-foot b { font: 400 1.7cqw var(--font-display); }
+  .seal { justify-self: end; width: 10cqw; height: 10cqw; position: relative; }
+  .seal canvas { width: 100%; height: 100%; }
+  .empty { width: min(640px, 100%); border: 1px dashed var(--line-strong); border-radius: 12px; padding: 32px; display: grid; gap: 14px; }
+  .empty h1 { font-size: 36px; }
+
+  @media print {
+    @page { size: A4 landscape; margin: 0; }
+    .topbar, .bar-top { display: none !important; }
+    body { background: #fff; }
+    main { padding: 0; }
+    .cert { width: 100%; box-shadow: none; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap" id="main"></main>
+<script src="assets/core.js?v=2"></script>
+<script src="assets/data.js?v=2"></script>
+<script>
+(() => {
+  const { Store, esc } = G;
+  if (!G.requireUser()) return;
+  G.header('certificates');
+  const main = document.getElementById('main');
+  const course = COURSES.find(c => c.id === G.qs('c'));
+  const exam = course && Store.exam(course.id);
+  if (!course || !exam || !exam.passed) {
+    main.innerHTML = `<div class="empty"><span class="mono">Certificate</span><h1>Not earned yet.</h1>
+      <p class="muted">Finish every lesson${course ? ' in ' + esc(course.title) : ''} and pass the final assessment to earn this certificate.</p>
+      <div><a class="btn solid" href="${course ? 'course.html?c=' + course.id : 'app.html'}">Go to the course</a></div></div>`;
+    return;
+  }
+  const d = new Date(exam.date);
+  const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const parts = course.title.split(' '), lastWord = parts.pop();
+  const li = 'https://www.linkedin.com/profile/add?' + new URLSearchParams({
+    startTask: 'CERTIFICATION_NAME', name: course.title, organizationName: 'Gambit',
+    issueYear: d.getFullYear(), issueMonth: d.getMonth() + 1, certId: exam.certId, certUrl: location.href
+  });
+  main.innerHTML = `
+    <div class="bar-top">
+      <a class="crumb" href="app.html#certificates">← My certificates</a>
+      <div class="actions">
+        <button class="btn ghost small" id="copy">Copy link</button>
+        <a class="btn ghost small" href="${li}" target="_blank" rel="noopener">Add to LinkedIn</a>
+        <button class="btn solid small" id="print">Download PDF</button>
+      </div>
+    </div>
+    <article class="cert" aria-label="Certificate of completion">
+      <div class="frame">
+        <div class="c-head">
+          <span class="c-brand"><canvas class="piece-icon" data-piece="knight" aria-hidden="true"></canvas>Gambit</span>
+          <span class="c-mono">Certificate of completion</span>
+        </div>
+        <div class="c-body">
+          <span class="c-title">This certifies that</span>
+          <span class="c-name">${esc(Store.user.name)}</span>
+          <span class="c-line"></span>
+          <span class="c-title">has completed</span>
+          <span class="c-course">${esc(parts.join(' '))} <em>${esc(lastWord)}</em></span>
+          <p class="c-desc">${esc(course.summary)}</p>
+        </div>
+        <div class="c-foot">
+          <div><span class="c-mono">Awarded</span><b>${date}</b></div>
+          <div><span class="c-mono">Assessment</span><b class="num">${exam.score} of ${exam.total}</b></div>
+          <div><span class="c-mono">Certificate ID</span><b class="num">${esc(exam.certId)}</b></div>
+          <div class="seal"><canvas id="seal" aria-hidden="true"></canvas></div>
+        </div>
+      </div>
+    </article>`;
+
+  // The certificate keeps its paper colours in dark mode, so paint its icons directly
+  const paint = (cv, fn) => { const px = Math.round(cv.clientWidth * 2) || 200; cv.width = cv.height = px; const c = cv.getContext('2d'); fn(c, px); };
+  const logo = document.querySelector('.c-brand canvas');
+  paint(logo, (c, px) => { c.scale(px / 100, px / 100); c.fillStyle = '#17150F'; G.drawPiece(c, 'knight'); });
+  const seal = () => paint(document.getElementById('seal'), (c, px) => {
+    const r = px / 2; c.translate(r, r);
+    c.strokeStyle = '#2E5B45'; c.lineWidth = px * .012;
+    c.beginPath(); c.arc(0, 0, r * .96, 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.arc(0, 0, r * .74, 0, Math.PI * 2); c.stroke();
+    c.fillStyle = '#2E5B45'; c.font = `500 ${px * .07}px "Geist Mono", monospace`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    const text = 'GAMBIT · GAME THEORY · VERIFIED · ', n = text.length;
+    for (let k = 0; k < n; k++) { c.save(); c.rotate((k / n) * Math.PI * 2); c.fillText(text[k], 0, -r * .85); c.restore(); }
+    c.save(); c.translate(-r * .38, -r * .42); c.scale(r * .0076, r * .0076); G.drawPiece(c, 'king'); c.restore();
+  });
+  seal();
+  document.fonts && document.fonts.ready.then(seal);
+
+  document.getElementById('print').addEventListener('click', () => window.print());
+  document.getElementById('copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(location.href); G.toast('Link copied'); }
+    catch { G.toast('Copy the address bar to share'); }
+  });
+})();
+</script>
+</body>
+</html>

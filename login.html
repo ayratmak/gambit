@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign in · Gambit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/app.css?v=2">
+<style>
+  .auth { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); }
+  .auth-form { display: grid; align-content: center; justify-items: center; padding: 40px var(--gutter); }
+  .auth-inner { width: min(400px, 100%); display: grid; gap: 26px; }
+  .auth-inner .brand { font-size: 17px; }
+  .auth h1 { font-size: clamp(38px, 4.4vw, 54px); line-height: 1; letter-spacing: -.03em; }
+  .auth h1 em { color: var(--accent); }
+  .switch { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border: 1px dashed var(--line-strong); border-radius: 999px; }
+  .switch button { border: 0; background: none; padding: 9px; border-radius: 999px; cursor: pointer; font-size: 14px; color: var(--muted); }
+  .switch button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+  form { display: grid; gap: 16px; }
+  .or { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .g { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font: 600 10px var(--font-ui); }
+  .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .link { background: none; border: 0; padding: 0; cursor: pointer; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+  .proto { font-size: 12px; color: var(--muted); }
+
+  .auth-art {
+    position: relative; background: var(--card-bg); color: var(--card-fg); overflow: hidden;
+    display: grid; align-content: end; padding: clamp(28px, 4vw, 56px); min-height: 100%;
+  }
+  .auth-art canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .auth-art .copy { position: relative; display: grid; gap: 14px; max-width: 30ch; }
+  .auth-art blockquote { margin: 0; font: 350 clamp(24px, 2.4vw, 32px)/1.2 var(--font-display); letter-spacing: -.01em; }
+  .auth-art .mono { color: var(--card-muted); }
+  @media (max-width: 860px) {
+    .auth { grid-template-columns: 1fr; }
+    .auth-art { min-height: 300px; order: -1; }
+  }
+</style>
+</head>
+<body>
+<main class="auth">
+  <div class="auth-form">
+    <div class="auth-inner">
+      <a class="brand" href="index.html"><canvas class="piece-icon" data-piece="knight" aria-hidden="true" style="width:22px;height:22px"></canvas>Gambit</a>
+      <h1 id="heading">Welcome <em>back.</em></h1>
+      <div class="switch" role="tablist" aria-label="Account">
+        <button role="tab" id="tabIn" aria-selected="true">Sign in</button>
+        <button role="tab" id="tabUp" aria-selected="false">Create account</button>
+      </div>
+      <form id="form" novalidate>
+        <div class="field" id="nameField" hidden>
+          <label for="name">Full name</label>
+          <input class="input" id="name" name="name" autocomplete="name" placeholder="Alex Morgan">
+          <span class="hint">As it should appear on your certificates.</span>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com">
+        </div>
+        <div class="field">
+          <div class="row-between"><label for="password">Password</label><button type="button" class="link" id="forgot">Forgot password?</button></div>
+          <input class="input" id="password" name="password" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+        </div>
+        <p class="err" id="err" hidden></p>
+        <button class="btn solid block" id="submit" type="submit">Sign in</button>
+        <div class="or">or</div>
+        <button class="btn ghost block" type="button" id="google"><span class="g">G</span>Continue with Google</button>
+      </form>
+      <p class="proto">Prototype: your account and progress are saved in this browser only. Passwords aren't stored.</p>
+    </div>
+  </div>
+  <aside class="auth-art" aria-hidden="true">
+    <canvas id="board"></canvas>
+    <div class="copy">
+      <span class="mono">£19 per course · certificate included</span>
+      <blockquote>Play the game first. Learn its name after.</blockquote>
+    </div>
+  </aside>
+</main>
+
+<script src="assets/core.js?v=2"></script>
+<script>
+(() => {
+  const { Store, toast, paintIcons, drawPiece } = G;
+  const next = G.qs('next') || 'app.html';
+  if (Store.user) location.replace(next);
+
+  let mode = G.qs('mode') === 'signup' ? 'up' : 'in';
+  const $ = id => document.getElementById(id);
+  function setMode(m) {
+    mode = m;
+    $('tabIn').setAttribute('aria-selected', String(m === 'in'));
+    $('tabUp').setAttribute('aria-selected', String(m === 'up'));
+    $('nameField').hidden = m !== 'up';
+    $('submit').textContent = m === 'up' ? 'Create account' : 'Sign in';
+    $('heading').innerHTML = m === 'up' ? 'Make your <em>first move.</em>' : 'Welcome <em>back.</em>';
+    $('password').autocomplete = m === 'up' ? 'new-password' : 'current-password';
+    $('forgot').hidden = m === 'up';
+    $('err').hidden = true;
+  }
+  $('tabIn').addEventListener('click', () => setMode('in'));
+  $('tabUp').addEventListener('click', () => setMode('up'));
+  setMode(mode);
+
+  // name lookup so signing in again shows the name you registered with
+  const ACC = 'gambit.accounts';
+  const accounts = () => { try { return JSON.parse(localStorage.getItem(ACC)) || {}; } catch { return {}; } };
+  const remember = (email, name) => { try { const a = accounts(); a[email] = name; localStorage.setItem(ACC, JSON.stringify(a)); } catch {} };
+
+  $('form').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = $('email').value.trim().toLowerCase(), pw = $('password').value, name = $('name').value.trim();
+    const fail = msg => { $('err').textContent = msg; $('err').hidden = false; };
+    if (mode === 'up' && name.length < 2) return fail('Enter your full name. It goes on your certificates.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email address, like you@company.com.');
+    if (pw.length < 8) return fail('Your password needs at least 8 characters.');
+    let finalName = name;
+    if (mode === 'in') {
+      finalName = accounts()[email];
+      if (!finalName) return fail('No account with that email in this browser. Create one instead?');
+    } else remember(email, name);
+    Store.signIn({ name: finalName, email });
+    location.href = next;
+  });
+  $('google').addEventListener('click', () => toast('Google sign-in comes with the live version'));
+  $('forgot').addEventListener('click', () => toast('Password reset comes with the live version'));
+
+  // Art panel: a quiet board with a few pieces mid-game
+  const cv = $('board'), ctx = cv.getContext('2d');
+  const pieces = [[3, 0, 'rook'], [6, 0, 'king'], [5, 1, 'pawn'], [6, 1, 'pawn'], [7, 1, 'pawn'], [2, 2, 'knight'], [4, 3, 'pawn'], [3, 4, 'bishop'], [5, 4, 'knight'], [1, 5, 'pawn'], [4, 5, 'queen', true], [0, 6, 'pawn'], [6, 6, 'pawn'], [7, 6, 'pawn'], [2, 7, 'rook'], [6, 7, 'king']];
+  const sprite = (type, col) => { const c = document.createElement('canvas'); c.width = c.height = 200; const x = c.getContext('2d'); x.scale(2, 2); x.fillStyle = col; drawPiece(x, type); return c; };
+  function art() {
+    const dpr = Math.min(devicePixelRatio || 1, 2), r = cv.getBoundingClientRect();
+    cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const cs = getComputedStyle(document.documentElement);
+    const fg = cs.getPropertyValue('--card-fg').trim(), acc = cs.getPropertyValue('--accent').trim();
+    const size = Math.max(r.width, r.height) * .95, sq = size / 8;
+    const ox = r.width - size * .78, oy = -size * .08;
+    ctx.save(); ctx.translate(ox, oy);
+    ctx.globalAlpha = .06; ctx.fillStyle = fg;
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) if ((x + y) % 2) ctx.fillRect(x * sq, y * sq, sq, sq);
+    ctx.globalAlpha = .14; ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.strokeRect(0, 0, size, size);
+    for (const [x, y, t, a] of pieces) {
+      ctx.globalAlpha = a ? 1 : .5;
+      ctx.drawImage(sprite(t, a ? acc : fg), x * sq + sq * .08, y * sq + sq * .02, sq * .84, sq * .84);
+    }
+    ctx.restore();
+    // fade towards the quote
+    const g = ctx.createLinearGradient(0, r.height * .45, 0, r.height);
+    const bg = cs.getPropertyValue('--card-bg').trim();
+    g.addColorStop(0, 'transparent'); g.addColorStop(1, bg);
+    ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(0, 0, r.width, r.height);
+  }
+  addEventListener('resize', art);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', art);
+  paintIcons(); art();
+  document.fonts && document.fonts.ready.then(art);
+})();
+</script>
+</body>
+</html>
