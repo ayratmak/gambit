@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=2">
+<link rel="stylesheet" href="assets/app.css?v=3">
 <style>
   main { padding-block: 36px 96px; }
   .crumb { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; margin-bottom: 28px; }
@@ -60,8 +60,8 @@
 </head>
 <body>
 <main class="wrap" id="main"></main>
-<script src="assets/core.js?v=2"></script>
-<script src="assets/data.js?v=2"></script>
+<script src="assets/core.js?v=3"></script>
+<script src="assets/data.js?v=3"></script>
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, courseProgress, canOpen } = G;
@@ -81,7 +81,7 @@
       ${m.lessons.map(l => {
         n++;
         const done = Store.isDone(course.id, l.id), open = canOpen(course, l), ready = playable(l);
-        const tag = !ready ? '<span class="badge">In production</span>' : (!owns && l.preview ? '<span class="badge free">Free preview</span>' : '');
+        const tag = !ready ? '<span class="badge">In production</span>' : (!owns && l.preview ? '<span class="badge free">Preview</span>' : '');
         const inner = `<span class="dot num">${done ? '✓' : n}</span>
           <span><span class="t">${esc(l.title)}</span><span class="sub"><span class="mono">${esc(l.kind)}</span><span class="mono num">${l.minutes} min</span></span></span>
           <span class="right">${tag}${!open && ready ? lockSvg : ''}</span>`;
@@ -107,7 +107,7 @@
       side = `<div class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p.pct)}"/></svg>
         <div><b class="num">${Math.round(p.pct * 100)}%</b><div class="mono num">${p.done} of ${p.total} lessons</div></div></div>
         <a class="btn solid block" href="${nextHref}">${nextLabel}</a>
-        <span class="badge owned" style="justify-self:start">You own this course</span>`;
+        <span class="badge owned" style="justify-self:start">${G.FREE ? 'Free during early access' : 'You own this course'}</span>`;
     } else if (course.status === 'live') {
       const pv = lessonsOf(course).find(l => l.preview);
       side = `<div class="price-big num">£${course.price}<small>one-off</small></div>
@@ -117,7 +117,7 @@
     } else {
       const pv = lessonsOf(course).find(l => l.preview && playable(l));
       side = `<span class="mono">${course.status === 'preview' ? 'Launching soon' : 'In production'}</span>
-        <div class="price-big num">£${course.price}<small>at launch</small></div>
+        ${G.FREE ? '' : `<div class="price-big num">£${course.price}<small>at launch</small></div>`}
         <p class="muted" style="font-size:14px">This course is still being written with our practitioners. ${pv ? 'Its first lesson is open to try now.' : 'The syllabus below is a draft.'}</p>
         ${pv ? `<a class="btn solid block" href="lesson.html?c=${course.id}&l=${pv.id}">Play the preview lesson</a>` : ''}`;
     }

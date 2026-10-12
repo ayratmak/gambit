@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Sign in · Gambit</title>
+<title>Start learning · Gambit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=2">
+<link rel="stylesheet" href="assets/app.css?v=3">
 <style>
   .auth { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); }
   .auth-form { display: grid; align-content: center; justify-items: center; padding: 40px var(--gutter); }
@@ -25,7 +25,11 @@
   .g { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font: 600 10px var(--font-ui); }
   .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .link { background: none; border: 0; padding: 0; cursor: pointer; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
-  .proto { font-size: 12px; color: var(--muted); }
+  .proto { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .proto a { text-decoration: underline; text-underline-offset: 3px; }
+  .lede-s { font: 350 18px/1.45 var(--font-display); color: var(--muted); margin-top: -10px; }
+  .check { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 14px; color: var(--muted); cursor: pointer; align-items: start; }
+  .check input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--accent); }
 
   .auth-art {
     position: relative; background: var(--card-bg); color: var(--card-fg); overflow: hidden;
@@ -46,13 +50,10 @@
   <div class="auth-form">
     <div class="auth-inner">
       <a class="brand" href="index.html"><canvas class="piece-icon" data-piece="knight" aria-hidden="true" style="width:22px;height:22px"></canvas>Gambit</a>
-      <h1 id="heading">Welcome <em>back.</em></h1>
-      <div class="switch" role="tablist" aria-label="Account">
-        <button role="tab" id="tabIn" aria-selected="true">Sign in</button>
-        <button role="tab" id="tabUp" aria-selected="false">Create account</button>
-      </div>
+      <h1>Start learning, <em>free.</em></h1>
+      <p class="lede-s">Every Gambit course is free during early access. Register once and get every lesson, the final assessments and your certificates.</p>
       <form id="form" novalidate>
-        <div class="field" id="nameField" hidden>
+        <div class="field">
           <label for="name">Full name</label>
           <input class="input" id="name" name="name" autocomplete="name" placeholder="Alex Morgan">
           <span class="hint">As it should appear on your certificates.</span>
@@ -61,73 +62,50 @@
           <label for="email">Email</label>
           <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com">
         </div>
-        <div class="field">
-          <div class="row-between"><label for="password">Password</label><button type="button" class="link" id="forgot">Forgot password?</button></div>
-          <input class="input" id="password" name="password" type="password" autocomplete="current-password" placeholder="At least 8 characters">
-        </div>
-        <p class="err" id="err" hidden></p>
-        <button class="btn solid block" id="submit" type="submit">Sign in</button>
-        <div class="or">or</div>
-        <button class="btn ghost block" type="button" id="google"><span class="g">G</span>Continue with Google</button>
+        <label class="check" for="consent">
+          <input type="checkbox" id="consent" name="consent">
+          <span>Email me when new courses launch. Occasional, and you can unsubscribe any time.</span>
+        </label>
+        <p class="err" id="err" role="alert" hidden></p>
+        <button class="btn solid block" id="submit" type="submit">Start learning</button>
       </form>
-      <p class="proto">Prototype: your account and progress are saved in this browser only. Passwords aren't stored.</p>
+      <p class="proto">Been here before? Use the same email to carry on. Your progress is saved on this device. By continuing you agree to our <a href="privacy.html">privacy notice</a>.</p>
     </div>
   </div>
   <aside class="auth-art" aria-hidden="true">
     <canvas id="board"></canvas>
     <div class="copy">
-      <span class="mono">£19 per course · certificate included</span>
+      <span class="mono">Free during early access · certificate included</span>
       <blockquote>Play the game first. Learn its name after.</blockquote>
     </div>
   </aside>
 </main>
 
-<script src="assets/core.js?v=2"></script>
+<script src="assets/core.js?v=3"></script>
 <script>
 (() => {
-  const { Store, toast, paintIcons, drawPiece } = G;
+  const { Store, paintIcons, drawPiece } = G;
   const next = G.qs('next') || 'app.html';
   if (Store.user) location.replace(next);
 
-  let mode = G.qs('mode') === 'signup' ? 'up' : 'in';
   const $ = id => document.getElementById(id);
-  function setMode(m) {
-    mode = m;
-    $('tabIn').setAttribute('aria-selected', String(m === 'in'));
-    $('tabUp').setAttribute('aria-selected', String(m === 'up'));
-    $('nameField').hidden = m !== 'up';
-    $('submit').textContent = m === 'up' ? 'Create account' : 'Sign in';
-    $('heading').innerHTML = m === 'up' ? 'Make your <em>first move.</em>' : 'Welcome <em>back.</em>';
-    $('password').autocomplete = m === 'up' ? 'new-password' : 'current-password';
-    $('forgot').hidden = m === 'up';
-    $('err').hidden = true;
-  }
-  $('tabIn').addEventListener('click', () => setMode('in'));
-  $('tabUp').addEventListener('click', () => setMode('up'));
-  setMode(mode);
+  // prefill a returning visitor's name and email on this device
+  try { const last = JSON.parse(localStorage.getItem('gambit.last') || 'null'); if (last) { $('name').value = last.name; $('email').value = last.email; } } catch {}
 
-  // name lookup so signing in again shows the name you registered with
-  const ACC = 'gambit.accounts';
-  const accounts = () => { try { return JSON.parse(localStorage.getItem(ACC)) || {}; } catch { return {}; } };
-  const remember = (email, name) => { try { const a = accounts(); a[email] = name; localStorage.setItem(ACC, JSON.stringify(a)); } catch {} };
-
-  $('form').addEventListener('submit', e => {
+  $('form').addEventListener('submit', async e => {
     e.preventDefault();
-    const email = $('email').value.trim().toLowerCase(), pw = $('password').value, name = $('name').value.trim();
-    const fail = msg => { $('err').textContent = msg; $('err').hidden = false; };
-    if (mode === 'up' && name.length < 2) return fail('Enter your full name. It goes on your certificates.');
+    const name = $('name').value.trim(), email = $('email').value.trim().toLowerCase(), consent = $('consent').checked;
+    const fail = msg => { $('err').textContent = msg; $('err').hidden = false; $('submit').disabled = false; $('submit').textContent = 'Start learning'; };
+    $('err').hidden = true;
+    if (name.length < 2) return fail('Enter your full name. It goes on your certificates.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email address, like you@company.com.');
-    if (pw.length < 8) return fail('Your password needs at least 8 characters.');
-    let finalName = name;
-    if (mode === 'in') {
-      finalName = accounts()[email];
-      if (!finalName) return fail('No account with that email in this browser. Create one instead?');
-    } else remember(email, name);
-    Store.signIn({ name: finalName, email });
+    $('submit').disabled = true; $('submit').textContent = 'Signing you in…';
+    try { await G.register({ name, email, consent }); }
+    catch (err) { return fail(err instanceof TypeError ? 'We couldn\'t reach Gambit. Check your connection and try again.' : err.message); }
+    try { localStorage.setItem('gambit.last', JSON.stringify({ name, email })); } catch {}
+    Store.signIn({ name, email });
     location.href = next;
   });
-  $('google').addEventListener('click', () => toast('Google sign-in comes with the live version'));
-  $('forgot').addEventListener('click', () => toast('Password reset comes with the live version'));
 
   // Art panel: a quiet board with a few pieces mid-game
   const cv = $('board'), ctx = cv.getContext('2d');

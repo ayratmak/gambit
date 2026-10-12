@@ -62,7 +62,19 @@
   }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => paintIcons());
 
-  /* ---------- Prototype store ---------- */
+  /* ---------- Settings ---------- */
+  // Early access: every finished course is free for registered users. Flip to false to bring back £19 checkout.
+  const FREE = true;
+  // Sign-ups go to the Cloudflare Pages function. Same origin on Cloudflare, absolute URL elsewhere (GitHub Pages, localhost).
+  const API = /\.pages\.dev$/.test(location.hostname) || window.GAMBIT_SAME_ORIGIN ? '' : 'https://gambit-7w4.pages.dev';
+  async function register(user) {
+    const res = await fetch(API + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(user) });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || 'Something went wrong. Try again in a moment.');
+    return body;
+  }
+
+  /* ---------- Local store (progress lives on this device for now) ---------- */
   const KEY = 'gambit.v1';
   const blank = () => ({ session: null, purchases: [], progress: {}, exams: {} });
   function load() { try { return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { return blank(); } }
@@ -72,7 +84,10 @@
     get user() { return state.session; },
     signIn(user) { state.session = user; save(state); },
     signOut() { state.session = null; save(state); },
-    owns(courseId) { return state.purchases.includes(courseId); },
+    owns(courseId) {
+      if (FREE) { const c = (window.COURSES || []).find(x => x.id === courseId); if (c && c.status === 'live') return true; }
+      return state.purchases.includes(courseId);
+    },
     buy(courseId) { if (!this.owns(courseId)) state.purchases.push(courseId); save(state); },
     isDone(courseId, lessonId) { return !!(state.progress[courseId] || {})[lessonId]; },
     complete(courseId, lessonId) { (state.progress[courseId] ||= {})[lessonId] = Date.now(); save(state); },
@@ -125,7 +140,6 @@
         <div class="menu" id="userMenu" role="menu" hidden>
           <div class="who"><strong>${esc(u ? u.name : '')}</strong><span>${esc(u ? u.email : '')}</span></div>
           <a href="index.html" role="menuitem">Gambit home</a>
-          <button id="resetBtn" role="menuitem">Reset demo data</button>
           <button id="signOutBtn" role="menuitem">Sign out</button>
         </div>
       </div></div>`;
@@ -134,7 +148,6 @@
     btn.addEventListener('click', e => { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', String(!menu.hidden)); });
     document.addEventListener('click', e => { if (!menu.contains(e.target)) { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); } });
     el.querySelector('#signOutBtn').addEventListener('click', () => { Store.signOut(); location.href = 'login.html'; });
-    el.querySelector('#resetBtn').addEventListener('click', () => { const u2 = Store.user; Store.reset(); Store.signIn(u2); location.href = 'app.html'; });
     paintIcons(el);
   }
 
@@ -163,5 +176,5 @@
     s.querySelector('#coPay').focus();
   }
 
-  window.G = { drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
+  window.G = { FREE, register, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
 })();

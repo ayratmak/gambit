@@ -20,16 +20,19 @@ Then open http://localhost:8000.
 
 You can also just double-click `index.html` to open it in a browser.
 
-## The course app (prototype)
+## The course app
+
+Every finished course is free during early access, but needs registration (name, email, optional opt-in to course emails). That's how the mailing list for future paid courses gets built.
 
 | Page | What it does |
 | --- | --- |
-| `login.html` | Sign in or create an account (name goes on certificates) |
-| `app.html` | Dashboard: continue learning, my courses, catalogue, certificates |
-| `course.html?c=<id>` | Course overview, syllabus, £19 checkout |
+| `login.html` | Register or come back with the same email |
+| `app.html` | Dashboard: continue learning, courses, certificates |
+| `course.html?c=<id>` | Course overview and syllabus |
 | `lesson.html?c=<id>&l=<lesson>` | Interactive lesson player; `&exam=1` runs the final assessment |
 | `certificate.html?c=<id>` | Certificate with ID, PDF download and LinkedIn link |
+| `privacy.html` | Privacy notice |
 
-Courses and lessons are data in `assets/data.js`. Each lesson is a list of steps (`read`, `sort`, `choice`, `matrix`, `repeated`, `summary`), so adding content means writing data, not code.
+Courses and lessons are data in `assets/data.js`. Each lesson is a list of steps (`read`, `sort`, `choice`, `matrix`, `repeated`, `summary`). Paid checkout is still in the code: set `FREE = false` in `assets/core.js` to bring the £19 price back.
 
-This is a front-end prototype: accounts, purchases and progress are stored in the browser's localStorage, no payment is taken, and passwords are never stored. Real sign-in, Stripe payments and certificate verification need a backend.
+**Backend:** Cloudflare Pages with one function (`functions/api/register.js`) writing to a D1 database (`db/schema.sql`). Live at https://gambit-7w4.pages.dev. Deploy with `./deploy.sh`, export the list with `./export-signups.sh` (add `--consented` for marketing-ready emails only). Lesson progress and certificates are still stored in the learner's browser.
