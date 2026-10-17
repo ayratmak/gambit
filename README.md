@@ -36,3 +36,14 @@ Every finished course is free during early access, but needs registration (name,
 Courses and lessons are data in `assets/data.js`. Each lesson is a list of steps (`read`, `sort`, `choice`, `matrix`, `repeated`, `summary`). Paid checkout is still in the code: set `FREE = false` in `assets/core.js` to bring the £19 price back.
 
 **Backend:** Cloudflare Pages with one function (`functions/api/register.js`) writing to a D1 database (`db/schema.sql`). Live at https://gambit-7w4.pages.dev. Deploy with `./deploy.sh`, export the list with `./export-signups.sh` (add `--consented` for marketing-ready emails only). Lesson progress and certificates are still stored in the learner's browser.
+
+## How changes go live
+
+Every push to GitHub deploys automatically to Cloudflare Pages (`.github/workflows/deploy.yml`):
+
+- **Push to `main`:** goes live on https://gambitschool.com within about a minute.
+- **Push to any other branch:** gets its own preview at `https://<branch>.gambit-7w4.pages.dev`, kept out of search engines. Use a branch and a pull request for anything you want checked before it's live.
+
+The run and its URL show under the repo's **Actions** tab. No Cloudflare account is needed to contribute.
+
+After editing CSS or JS in `assets/`, bump the `?v=` number on the asset links in the HTML pages so browsers fetch the new version.

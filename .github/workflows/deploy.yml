@@ -1,0 +1,40 @@
+# Deploys the site to Cloudflare Pages on every push.
+# main goes live on gambitschool.com; any other branch gets a preview URL (<branch>.gambit-7w4.pages.dev, kept out of search).
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: 00ea54d224fb09b51fb2f000a3674179
+      DEPLOY_BRANCH: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, so the sitemap gets real last-modified dates
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check the Cloudflare token is set
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Add the CLOUDFLARE_API_TOKEN repository secret (Settings > Secrets and variables > Actions) to enable deploys."
+            exit 1
+          fi
+      - name: Build and deploy
+        run: ./deploy.sh
+      - name: Summary
+        run: |
+          if [ "$DEPLOY_BRANCH" = "main" ]; then url="https://gambitschool.com"; else url="https://$(echo "$DEPLOY_BRANCH" | tr '[:upper:]_/' '[:lower:]--' | cut -c1-28).gambit-7w4.pages.dev"; fi
+          echo "Deployed **$DEPLOY_BRANCH** to $url" >> "$GITHUB_STEP_SUMMARY"

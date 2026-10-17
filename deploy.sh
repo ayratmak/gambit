@@ -16,4 +16,5 @@ lastmod() { if [ -n "$(git status --porcelain -- "$1")" ]; then date +%F; else d
   echo '</urlset>'
 } > dist/sitemap.xml
 [ "${1:-}" = "--build" ] && exit 0
-npx --yes wrangler@3 pages deploy dist --project-name gambit --branch main --commit-dirty=true
+# DEPLOY_BRANCH is set by the GitHub workflow; local runs deploy main (live)
+npx --yes wrangler@3 pages deploy dist --project-name gambit --branch "${DEPLOY_BRANCH:-main}" --commit-dirty=true

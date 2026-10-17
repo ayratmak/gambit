@@ -4,3 +4,4 @@ gambit.html
 dist/
 .wrangler/
 signups.csv
+node_modules/
