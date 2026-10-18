@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=4">
+<link rel="stylesheet" href="assets/app.css?v=5">
 <style>
   main { padding-block: 36px 96px; }
   .crumb { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; margin-bottom: 28px; }
@@ -64,8 +64,17 @@
 </head>
 <body>
 <main class="wrap" id="main"></main>
-<script src="assets/core.js?v=4"></script>
-<script src="assets/data.js?v=4"></script>
+<script src="assets/core.js?v=5"></script>
+<script src="assets/courses/foundations.js?v=5"></script>
+<script src="assets/courses/strategy.js?v=5"></script>
+<script src="assets/courses/negotiation.js?v=5"></script>
+<script src="assets/courses/psychology.js?v=5"></script>
+<script src="assets/courses/game-plan.js?v=5"></script>
+<script src="assets/courses/procurement.js?v=5"></script>
+<script src="assets/courses/true-price.js?v=5"></script>
+<script src="assets/courses/auctions.js?v=5"></script>
+<script src="assets/courses/advanced-auctions.js?v=5"></script>
+<script src="assets/data.js?v=5"></script>
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, courseProgress, canOpen } = G;
@@ -111,17 +120,17 @@
       side = `<div class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p.pct)}"/></svg>
         <div><b class="num">${Math.round(p.pct * 100)}%</b><div class="mono num">${p.done} of ${p.total} lessons</div></div></div>
         <a class="btn solid block" href="${nextHref}">${nextLabel}</a>
-        <span class="badge owned" style="justify-self:start">${G.FREE ? 'Free during early access' : 'You own this course'}</span>`;
+        <span class="badge owned" style="justify-self:start">${course.free ? 'Free course' : 'You own this course'}</span>`;
     } else if (course.status === 'live') {
       const pv = lessonsOf(course).find(l => l.preview);
-      side = `<div class="price-big num">£${course.price}<small>one-off</small></div>
+      side = `<div class="price-big num">${G.money(course.price)}<small>one-off</small></div>
         <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li><li>Final assessment</li><li>Certificate of completion</li><li>Lifetime access</li></ul>
-        <button class="btn solid block" id="buyBtn">Buy course · £${course.price}</button>
+        <button class="btn solid block" id="buyBtn">Buy course · ${G.money(course.price)}</button>
         ${pv ? `<a class="btn ghost block" href="lesson.html?c=${course.id}&l=${pv.id}">Try the free lesson</a>` : ''}`;
     } else {
       const pv = lessonsOf(course).find(l => l.preview && playable(l));
       side = `<span class="mono">${course.status === 'preview' ? 'Launching soon' : 'In production'}</span>
-        ${G.FREE ? '' : `<div class="price-big num">£${course.price}<small>at launch</small></div>`}
+        ${course.free ? '' : `<div class="price-big num">${G.money(course.price)}<small>at launch</small></div>`}
         <p class="muted" style="font-size:14px">This course is still being written with our practitioners. ${pv ? 'Its first lesson is open to try now.' : 'The syllabus below is a draft.'}</p>
         ${pv ? `<a class="btn solid block" href="lesson.html?c=${course.id}&l=${pv.id}">Play the preview lesson</a>` : ''}`;
     }
@@ -145,6 +154,7 @@
     b && b.addEventListener('click', () => G.checkout(course, render));
   }
   render();
+  G.confirmPayment(render);
   if (G.qs('buy') === '1' && !Store.owns(course.id) && course.status === 'live') G.checkout(course, render);
 })();
 </script>

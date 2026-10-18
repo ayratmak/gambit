@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=4">
+<link rel="stylesheet" href="assets/app.css?v=5">
 <style>
   .auth { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); }
   .auth-form { display: grid; align-content: center; justify-items: center; padding: 40px var(--gutter); }
@@ -54,8 +54,8 @@
   <div class="auth-form">
     <div class="auth-inner">
       <a class="brand" href="index.html"><canvas class="piece-icon" data-piece="knight" aria-hidden="true" style="width:22px;height:22px"></canvas>Gambit</a>
-      <h1>Start learning, <em>free.</em></h1>
-      <p class="lede-s">Every Gambit course is free during early access. Register once and get every lesson, the final assessments and your certificates.</p>
+      <h1>Start with the <em>free</em> course.</h1>
+      <p class="lede-s">Game theory foundations is free, certificate included. Eight more courses go deeper into negotiation, tenders and auctions, at £9.89 each.</p>
       <form id="form" novalidate>
         <div class="field">
           <label for="name">Full name</label>
@@ -73,19 +73,19 @@
         <p class="err" id="err" role="alert" hidden></p>
         <button class="btn solid block" id="submit" type="submit">Start learning</button>
       </form>
-      <p class="proto">Been here before? Use the same email to carry on. Your progress is saved on this device. By continuing you agree to our <a href="privacy.html">privacy notice</a>.</p>
+      <p class="proto">Been here before? Use the same email to carry on. Your progress is saved on this device, and courses you've bought come with you. By continuing you agree to our <a href="privacy.html">privacy notice</a>.</p>
     </div>
   </div>
   <aside class="auth-art" aria-hidden="true">
     <canvas id="board"></canvas>
     <div class="copy">
-      <span class="mono">Free during early access · certificate included</span>
+      <span class="mono">Foundations free · certificate included</span>
       <blockquote>Play the game first. Learn its name after.</blockquote>
     </div>
   </aside>
 </main>
 
-<script src="assets/core.js?v=4"></script>
+<script src="assets/core.js?v=5"></script>
 <script>
 (() => {
   const { Store, paintIcons, drawPiece } = G;
@@ -104,10 +104,12 @@
     if (name.length < 2) return fail('Enter your full name. It goes on your certificates.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email address, like you@company.com.');
     $('submit').disabled = true; $('submit').textContent = 'Signing you in…';
-    try { await G.register({ name, email, consent }); }
+    let reg;
+    try { reg = await G.register({ name, email, consent }); }
     catch (err) { return fail(err instanceof TypeError ? 'We couldn\'t reach Gambit. Check your connection and try again.' : err.message); }
     try { localStorage.setItem('gambit.last', JSON.stringify({ name, email })); } catch {}
     Store.signIn({ name, email });
+    Store.addPurchases(reg && reg.purchases);
     location.href = next;
   });
 

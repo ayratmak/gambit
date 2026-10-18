@@ -1,19 +1,7 @@
 // POST /api/register  { name, email, consent }
 // Creates or refreshes a sign-up. Marketing consent is only ever switched on here, never off;
 // withdrawing it will go through an unsubscribe link.
-const ALLOWED = ['https://gambitschool.com', 'https://www.gambitschool.com', 'https://ayratmak.github.io', 'http://localhost:4817', 'http://localhost:8000'];
-
-function cors(request) {
-  const origin = request.headers.get('Origin') || '';
-  const h = { 'Content-Type': 'application/json', 'Vary': 'Origin' };
-  if (ALLOWED.includes(origin)) {
-    h['Access-Control-Allow-Origin'] = origin;
-    h['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
-    h['Access-Control-Allow-Headers'] = 'Content-Type';
-  }
-  return h;
-}
-const reply = (request, status, body) => new Response(JSON.stringify(body), { status, headers: cors(request) });
+import { cors, reply, validEmail } from '../../lib/http.js';
 
 export async function onRequestOptions({ request }) {
   return new Response(null, { status: 204, headers: cors(request) });
@@ -26,7 +14,7 @@ export async function onRequestPost({ request, env }) {
   const email = String(data.email || '').trim().toLowerCase().slice(0, 254);
   const consent = data.consent === true;
   if (name.length < 2) return reply(request, 400, { error: 'Enter your full name. It goes on your certificates.' });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return reply(request, 400, { error: 'Enter a valid email address, like you@company.com.' });
+  if (!validEmail(email)) return reply(request, 400, { error: 'Enter a valid email address, like you@company.com.' });
 
   const now = new Date().toISOString();
   const origin = (request.headers.get('Origin') || new URL(request.url).origin).slice(0, 100);
@@ -41,5 +29,10 @@ export async function onRequestPost({ request, env }) {
        consent_at = CASE WHEN excluded.marketing_consent = 1 AND signups.marketing_consent = 0 THEN excluded.consent_at ELSE signups.consent_at END`
   ).bind(email, name, consent ? 1 : 0, consent ? now : null, origin, now).run();
 
-  return reply(request, 200, { ok: true });
+  let purchases = [];
+  try {
+    const { results } = await env.DB.prepare('SELECT DISTINCT course FROM purchases WHERE email = ?1').bind(email).all();
+    purchases = (results || []).map(r => r.course);
+  } catch { /* purchases table not created yet: sign-up still succeeds */ }
+  return reply(request, 200, { ok: true, purchases });
 }

@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=4">
+<link rel="stylesheet" href="assets/app.css?v=5">
 <style>
   body { display: grid; grid-template-rows: auto 1fr auto; min-height: 100vh; }
   .ltop { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
@@ -97,6 +97,59 @@
   .debrief { font: 350 18px/1.5 var(--font-display); min-height: 2.8em; }
   .debrief strong { font-weight: 550; }
 
+  /* slider calculator */
+  .calc { display: grid; gap: 18px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); padding: clamp(16px, 3vw, 24px); }
+  .calc label { display: grid; gap: 8px; font-size: 15px; }
+  .calc .lab { display: flex; justify-content: space-between; gap: 12px; }
+  .calc .lab b { font: 500 15px var(--font-mono); }
+  .calc input[type=range] { width: 100%; accent-color: var(--accent); }
+  .outs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .out { border: 1px dashed var(--line-strong); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
+  .out b { font: 400 28px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+  .out.goal-on { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+  .goal { font-size: 14px; color: var(--muted); }
+
+  /* game tree */
+  .tree { display: grid; gap: 10px; }
+  .tnode { border-left: 2px solid var(--line-strong); padding-left: 14px; display: grid; gap: 8px; }
+  .tnode > .who { font: 500 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .topt { display: grid; gap: 8px; }
+  .topt > button { text-align: left; display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line-strong); background: var(--surface); cursor: pointer; font-size: 15px; }
+  .topt > button:hover:not(:disabled) { border-color: var(--ink); }
+  .topt > button .lp { font: 400 20px var(--font-display); white-space: nowrap; }
+  .topt > button .lp i { font-style: normal; color: var(--muted); }
+  .topt > button.on { border-color: var(--ink); background: var(--raised); }
+  .topt > button.ok { border-color: var(--accent); background: var(--accent-soft); }
+  .topt > button.no { border-color: var(--bad); background: var(--bad-soft); }
+  .topt > button.miss { border-style: dashed; border-color: var(--accent); }
+  .topt > button:disabled { cursor: default; }
+  .topt > .tnode { margin-left: 10px; }
+  .topt.pruned > .tnode { opacity: .45; }
+
+  /* dialogue */
+  .chat { display: grid; gap: 12px; }
+  .bub { max-width: 88%; padding: 12px 16px; border-radius: 14px; font: 350 18px/1.45 var(--font-display); }
+  .bub.them { background: var(--surface); border: 1px solid var(--line-strong); justify-self: start; border-bottom-left-radius: 4px; }
+  .bub.you { background: var(--ink); color: var(--bg); justify-self: end; border-bottom-right-radius: 4px; }
+  .bub .nm { display: block; font: 500 10px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; opacity: .65; margin-bottom: 4px; }
+  .coach { justify-self: end; max-width: 88%; font-size: 14px; color: var(--muted); }
+  .coach b { color: var(--ink); font-weight: 500; }
+  .result { border: 1px solid var(--line-strong); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; font: 350 18px/1.45 var(--font-display); }
+  .result.good { border-color: var(--accent); background: var(--accent-soft); }
+  .result.bad { border-color: var(--bad); background: var(--bad-soft); }
+
+  /* auction */
+  .auc { display: grid; gap: 16px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); padding: clamp(16px, 3vw, 24px); }
+  .auc .you-val { font: 400 clamp(26px, 3.4vw, 34px)/1.1 var(--font-display); }
+  .bidrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .bidrow input { width: 140px; }
+  .bids { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+  .bids div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 500 13px var(--font-mono); display: grid; gap: 2px; }
+  .bids div span { font: 500 10px var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .bids div.me { border-color: var(--ink); }
+  .bids div.win { border-color: var(--accent); background: var(--accent-soft); }
+  .auc .out-line { font: 350 18px/1.45 var(--font-display); }
+
   .points { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; counter-reset: p; }
   .points li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 18px; border: 1px dashed var(--line-strong); border-radius: 10px; font: 350 19px/1.4 var(--font-display); counter-increment: p; }
   .points li::before { content: counter(p); font: 400 26px/1 var(--font-display); color: var(--accent); }
@@ -143,8 +196,17 @@
   <button class="btn solid" id="next" disabled>Continue</button>
 </div></footer>
 
-<script src="assets/core.js?v=4"></script>
-<script src="assets/data.js?v=4"></script>
+<script src="assets/core.js?v=5"></script>
+<script src="assets/courses/foundations.js?v=5"></script>
+<script src="assets/courses/strategy.js?v=5"></script>
+<script src="assets/courses/negotiation.js?v=5"></script>
+<script src="assets/courses/psychology.js?v=5"></script>
+<script src="assets/courses/game-plan.js?v=5"></script>
+<script src="assets/courses/procurement.js?v=5"></script>
+<script src="assets/courses/true-price.js?v=5"></script>
+<script src="assets/courses/auctions.js?v=5"></script>
+<script src="assets/courses/advanced-auctions.js?v=5"></script>
+<script src="assets/data.js?v=5"></script>
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, canOpen } = G;
@@ -163,7 +225,7 @@
 
   const steps = examMode ? course.exam.questions.map(q => ({ t: 'exam', ...q })) : lesson.steps;
   document.title = (examMode ? 'Final assessment' : lesson.title) + ' · Gambit';
-  let i = 0, firstTry = 0, graded = 0, examScore = 0;
+  let i = examMode ? 0 : Math.max(0, Math.min(steps.length - 1, (+G.qs("step") || 1) - 1)), firstTry = 0, graded = 0, examScore = 0;
   const segs = document.getElementById('segs');
   segs.innerHTML = steps.map(() => '<i></i>').join('');
 
@@ -195,6 +257,7 @@
 
   /* ---------- Step renderers ---------- */
   const R = {};
+  const BOTS = { tft: ['tit-for-tat', 'co-operate first, then copy your previous move.'], grim: ['grim trigger', 'co-operate until you defect once, then defect for ever.'], always: ['a never-co-operate rule', 'it defects every round.'] };
   R.read = (s, el) => {
     el.innerHTML = `<h2>${esc(s.title)}</h2><div class="body">${s.body.map(p => `<p>${p}</p>`).join('')}</div>`;
     if (s.figure) el.appendChild(matrix(s.figure));
@@ -324,8 +387,11 @@
       }
       if (over) {
         const best = s.rounds * s.pay[0][0][0], cuts = hist.filter(h => h[0] === 1).length, lastCut = hist[s.rounds - 1][0] === 1, mid = cuts - (lastCut ? 1 : 0);
-        let msg = `<strong>Your rival played tit-for-tat:</strong> co-operate first, then copy your previous move. `;
-        if (!cuts) msg += `You co-operated every round and earned ${y}, the most anyone can earn against it.`;
+        const bot = s.bot || 'tft';
+        let msg = `<strong>Your rival played ${BOTS[bot][0]}:</strong> ${BOTS[bot][1]} `;
+        if (bot === 'always') msg += `Against a rival who never co-operates, ${esc(s.moves[1].toLowerCase())} every round is your best reply. You earned ${y}.`;
+        else if (!cuts) msg += `You co-operated every round and earned ${y}, the most anyone can earn against it.`;
+        else if (bot === 'grim') msg += `You earned ${y}, against ${best} for co-operating every round. ${lastCut && cuts === 1 ? 'Defecting only in the final round is the one move grim trigger can never punish.' : 'Once you defected, it never co-operated again.'}`;
         else {
           msg += `You earned ${y}, against ${best} for co-operating every round. `;
           if (mid) msg += y < best ? 'Each undercut won one round, then your rival matched you and you both lost out. ' : 'Your mid-game undercuts each won a round and lost the next, so they only broke even. ';
@@ -338,12 +404,211 @@
     };
     moveBtns.forEach(b => b.addEventListener('click', () => {
       if (hist.length >= s.rounds) return;
-      const rival = hist.length ? hist[hist.length - 1][0] : 0;
+      const bot = s.bot || 'tft';
+      const rival = bot === 'always' ? 1 : bot === 'grim' ? (hist.some(h => h[0] === 1) ? 1 : 0) : (hist.length ? hist[hist.length - 1][0] : 0);
       hist.push([+b.dataset.m, rival]); draw();
     }));
     draw();
     setFoot('', '', `Play all ${s.rounds} rounds.`); ready(false);
   };
+  /* ---------- Slider calculator ---------- */
+  const fmtNum = (v, o) => {
+    const d = o.decimals ?? 0;
+    const n = Number(v), sign = n < 0 && Math.abs(n) >= 0.5 * Math.pow(10, -d) ? '-' : '';
+    return sign + (o.prefix || '') + Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d }) + (o.suffix || '');
+  };
+  R.slider = (s, el) => {
+    el.innerHTML = `<span class="mono">${esc(s.title)}</span><p class="q">${esc(s.prompt)}</p>`;
+    const box = document.createElement('div'); box.className = 'calc';
+    const names = s.inputs.map(x => x.id);
+    const fns = s.outputs.map((o, k) => {
+      const avail = names.concat(s.outputs.slice(0, k).filter(p => p.id).map(p => p.id));
+      return { avail, f: Function(...avail, 'return (' + o.expr + ')') };
+    });
+    const goalNames = names.concat(s.outputs.filter(p => p.id).map(p => p.id));
+    const goalFn = s.goal ? Function(...goalNames, 'return (' + s.goal.expr + ')') : null;
+    box.innerHTML = s.inputs.map(x => `<label><span class="lab"><span>${esc(x.label)}</span><b data-v="${esc(x.id)}"></b></span>
+      <input type="range" min="${x.min}" max="${x.max}" step="${x.step || 1}" value="${x.value}" data-i="${esc(x.id)}" aria-label="${esc(x.label)}"></label>`).join('')
+      + `<div class="outs">${s.outputs.map((o, k) => `<div class="out" data-o="${k}"><span class="mono">${esc(o.label)}</span><b></b></div>`).join('')}</div>`
+      + (s.goal ? `<p class="goal">Goal: ${esc(s.goal.text)}</p>` : '');
+    el.appendChild(box);
+    let moved = false, met = false;
+    const compute = () => {
+      const env = {};
+      s.inputs.forEach(x => { const v = +box.querySelector(`[data-i="${x.id}"]`).value; env[x.id] = v; box.querySelector(`[data-v="${x.id}"]`).textContent = fmtNum(v, x); });
+      s.outputs.forEach((o, k) => {
+        let v; try { v = fns[k].f(...fns[k].avail.map(n => env[n])); } catch { v = NaN; }
+        if (o.id) env[o.id] = v;
+        box.querySelector(`[data-o="${k}"] b`).textContent = Number.isFinite(v) ? fmtNum(v, o) : '-';
+      });
+      if (goalFn) {
+        const ok = !!goalFn(...goalNames.map(n => env[n]));
+        box.querySelectorAll('.out').forEach(x => x.classList.toggle('goal-on', ok));
+        if (ok && !met) { met = true; graded++; firstTry++; }
+        if (ok) { setFoot('good', 'Goal reached', esc(s.explain || '')); ready(); }
+        else if (!met) { setFoot('', '', esc(s.goal.text)); ready(false); }
+      } else if (moved) { setFoot('good', '', esc(s.explain || '')); ready(); }
+    };
+    box.addEventListener('input', () => { moved = true; compute(); });
+    compute();
+    if (!goalFn) { setFoot('', '', 'Move a slider to see what changes.'); ready(false); }
+  };
+
+  /* ---------- Game tree ---------- */
+  R.tree = (s, el) => {
+    el.innerHTML = `<span class="mono">${esc(s.title)}</span><p class="q">${esc(s.prompt)}</p>`;
+    const nodes = []; // { node, el }
+    const solve = n => {
+      if (n.pay) return n.pay;
+      const vals = n.options.map(o => solve(o.next || o));
+      const best = Math.max(...vals.map(v => v[n.p]));
+      n._best = vals.map(v => v[n.p] === best);
+      n._val = vals[n._best.indexOf(true)];
+      return n._val;
+    };
+    solve(s.root);
+    const pay = p => `<span class="lp">${p[0]}<i>, ${p[1]}</i></span>`;
+    const build = n => {
+      const id = nodes.length, d = document.createElement('div'); d.className = 'tnode';
+      nodes.push({ n, d, pick: null });
+      d.innerHTML = `<span class="who">${esc(s.players[n.p])} chooses</span>`;
+      n.options.forEach((o, k) => {
+        const w = document.createElement('div'); w.className = 'topt';
+        const leaf = o.pay || (o.next && o.next.pay);
+        w.innerHTML = `<button data-n="${id}" data-k="${k}"><span>${esc(o.label)}</span>${leaf ? pay(leaf) : ''}</button>`;
+        if (o.next && !o.next.pay) w.appendChild(build(o.next));
+        d.appendChild(w);
+      });
+      return d;
+    };
+    const t = document.createElement('div'); t.className = 'tree';
+    t.appendChild(build(s.root));
+    t.insertAdjacentHTML('beforeend', `<p class="mx-note">Payoffs: ${esc(s.players[0])} first, ${esc(s.players[1])} second${s.unit ? ' · ' + esc(s.unit) : ''}</p>`);
+    el.appendChild(t);
+    let checked = false;
+    t.addEventListener('click', e => {
+      const b = e.target.closest('button[data-n]'); if (!b || checked) return;
+      const rec = nodes[+b.dataset.n]; rec.pick = +b.dataset.k;
+      rec.d.querySelectorAll(':scope > .topt > button').forEach((x, k) => x.classList.toggle('on', k === rec.pick));
+      const left = nodes.filter(r => r.pick === null).length;
+      if (left) setFoot('', '', `Pick a move at ${left} more decision point${left > 1 ? 's' : ''}.`, 'Check');
+      else setFoot('', '', 'Every decision has a pick. Check it.', 'Check');
+      ready(!left);
+    });
+    setFoot('', '', `Pick a move at all ${nodes.length} decision points.`, 'Check'); ready(false);
+    R._check = () => {
+      if (checked) return false;
+      checked = true; graded++;
+      let right = true;
+      nodes.forEach(r => {
+        const btns = r.d.querySelectorAll(':scope > .topt > button');
+        btns.forEach((x, k) => {
+          x.disabled = true; x.classList.remove('on');
+          if (k === r.pick) x.classList.add(r.n._best[k] ? 'ok' : 'no');
+          else if (r.n._best[k] && !r.n._best[r.pick]) x.classList.add('miss');
+          if (!r.n._best[k]) x.parentElement.classList.add('pruned');
+        });
+        if (!r.n._best[r.pick]) right = false;
+      });
+      if (right) firstTry++;
+      const v = s.root._val;
+      setFoot(right ? 'good' : 'bad', right ? 'Solved by backward induction' : 'Not quite', `Outcome: ${esc(s.players[0])} ${v[0]}, ${esc(s.players[1])} ${v[1]}. ${esc(s.explain)}`);
+      return true;
+    };
+  };
+
+  /* ---------- Branching dialogue ---------- */
+  R.dialogue = (s, el) => {
+    el.innerHTML = `<span class="mono">${esc(s.title)}</span><p class="q">${esc(s.prompt)}</p>`;
+    const chat = document.createElement('div'); chat.className = 'chat'; el.appendChild(chat);
+    const opts = document.createElement('div'); opts.className = 'opts'; el.appendChild(opts);
+    let score = 0, max = 0;
+    const go = id => {
+      const n = s.nodes[id];
+      chat.insertAdjacentHTML('beforeend', `<div class="bub them"><span class="nm">${esc(s.them)}</span>${esc(n.say)}</div>`);
+      opts.innerHTML = '';
+      if (n.end) {
+        const cls = n.verdict === 'good' ? 'good' : n.verdict === 'bad' ? 'bad' : '';
+        chat.insertAdjacentHTML('beforeend', `<div class="result ${cls}"><span class="mono">${n.verdict === 'good' ? 'Strong result' : n.verdict === 'bad' ? 'Weak result' : 'Mixed result'}${max ? ` · ${score} of ${max} points` : ''}</span>${esc(n.result)}</div>`);
+        if (!s._graded) { s._graded = true; graded++; if (n.verdict === 'good') firstTry++; }
+        opts.innerHTML = '<button class="btn ghost" type="button">Try another route</button>';
+        opts.querySelector('button').addEventListener('click', () => R.dialogue(s, el));
+        setFoot(n.verdict === 'good' ? 'good' : n.verdict === 'bad' ? 'bad' : '', 'Conversation over', n.verdict === 'good' ? 'Continue, or replay to see the other routes.' : 'Replay to try a different approach, or continue.');
+        ready();
+        return;
+      }
+      max += Math.max(...n.options.map(o => o.score || 0));
+      opts.innerHTML = n.options.map((o, k) => `<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span><span>${esc(o.text)}</span></button>`).join('');
+      opts.onclick = e => {
+        const b = e.target.closest('.opt'); if (!b) return;
+        const o = n.options[+b.dataset.k]; score += o.score || 0;
+        opts.onclick = null;
+        chat.insertAdjacentHTML('beforeend', `<div class="bub you"><span class="nm">You</span>${esc(o.text)}</div>${o.note ? `<p class="coach"><b>Coach:</b> ${esc(o.note)}</p>` : ''}`);
+        go(o.next);
+        el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      };
+    };
+    setFoot('', '', 'Choose your replies.'); ready(false);
+    go(s.start);
+  };
+
+  /* ---------- Auction simulation ---------- */
+  R.auction = (s, el) => {
+    el.innerHTML = `<span class="mono">${esc(s.title)}</span><p class="q">${esc(s.prompt)}</p>`;
+    const box = document.createElement('div'); box.className = 'auc'; el.appendChild(box);
+    const buy = s.side === 'buy', N = s.rivals + 1, u = s.unit || '£';
+    const money = v => (v < 0 ? '-' : '') + u + (Math.round(Math.abs(v) * 100) / 100).toLocaleString('en-GB', { maximumFractionDigits: 2 });
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    let round = 0, total = 0, losses = 0;
+    const play = () => {
+      round++;
+      let mine, rivals, truth = null;
+      if (s.common) {
+        truth = s.common.truth;
+        const est = () => Math.round(truth * (1 + s.common.spread * (2 * Math.random() - 1)));
+        mine = est();
+        rivals = Array.from({ length: s.rivals }, () => {
+          const e = est(), shade = s.mode === 'first' ? 0.06 : 0.02;
+          return Math.round(buy ? e * (1 - shade) : e * (1 + shade));
+        });
+      } else {
+        const [lo, hi] = s.range;
+        mine = Math.round(rnd(lo, hi));
+        rivals = Array.from({ length: s.rivals }, () => {
+          const v = rnd(lo, hi);
+          if (s.mode !== 'first') return Math.round(v);
+          return Math.round(buy ? lo + (v - lo) * (N - 1) / N : v + (hi - v) / N);
+        });
+      }
+      box.innerHTML = `<div class="game-top"><span class="mono">Round ${round} of ${s.rounds}</span><span class="mono">Running total ${money(total)}</span></div>
+        <div><span class="mono">${s.common ? (buy ? 'Your estimate of its value' : 'Your estimate of the cost') : (buy ? 'What it\'s worth to you' : 'Your cost to deliver')}</span><div class="you-val num">${money(mine)}</div></div>
+        <div class="bidrow"><input class="input" type="number" inputmode="decimal" id="bidIn" aria-label="Your bid" placeholder="Your bid"><button class="btn solid" id="bidGo">Place bid</button></div>
+        <p class="prompt">${s.rivals} rival${s.rivals > 1 ? 's' : ''} bid at the same time. ${buy ? 'Highest' : 'Lowest'} bid wins${s.mode === 'first' ? (buy ? ' and pays its own bid' : ' and is paid its own bid') : (buy ? ' and pays the runner-up\'s bid' : ' and is paid the runner-up\'s bid')}.</p>`;
+      const input = box.querySelector('#bidIn'); input.focus();
+      const submit = () => {
+        const bid = parseFloat(input.value); if (!Number.isFinite(bid) || bid < 0) { input.focus(); return; }
+        const all = [{ who: 'You', b: bid, me: true }].concat(rivals.map((b, k) => ({ who: 'Rival ' + (k + 1), b })));
+        all.forEach(x => x.r = Math.random());
+        all.sort((a, b) => buy ? (b.b - a.b || a.r - b.r) : (a.b - b.b || a.r - b.r));
+        const win = all[0], price = s.mode === 'first' ? win.b : all[1].b;
+        const worth = s.common ? truth : mine;
+        const profit = win.me ? (buy ? worth - price : price - worth) : 0;
+        total += profit; if (profit < 0) losses++;
+        const winnerTrue = s.common ? (buy ? truth - price : price - truth) : null;
+        box.innerHTML = `<div class="game-top"><span class="mono">Round ${round} of ${s.rounds}</span><span class="mono">Running total ${money(total)}</span></div>
+          <div class="bids">${all.map((x, k) => `<div class="${x.me ? 'me ' : ''}${k === 0 ? 'win' : ''}"><span>${esc(x.who)}${k === 0 ? ' · wins' : ''}</span>${money(x.b)}</div>`).join('')}</div>
+          <p class="out-line">${s.mode === 'english' ? `The clock stopped at ${money(price)} when the last rival dropped out. ` : ''}${win.me ? `<b>You won</b> ${buy ? 'and paid' : 'and are paid'} ${money(price)}. ${s.common ? `It was really ${buy ? 'worth' : 'costing'} ${money(truth)}. ` : ''}Your profit: <b>${money(profit)}</b>.` : `${esc(win.who)} won at ${money(price)}.${s.common ? ` The true ${buy ? 'value' : 'cost'} was ${money(truth)}, so the winner ${winnerTrue < 0 ? 'lost ' + money(-winnerTrue) : 'made ' + money(winnerTrue)}.` : ''}`}</p>
+          ${round < s.rounds ? '<button class="btn ghost" id="again">Next round</button>' : ''}`;
+        if (round < s.rounds) { box.querySelector('#again').addEventListener('click', play); setFoot('', '', `Round ${round} done.`); }
+        else { graded++; if (!losses) firstTry++; setFoot(losses ? 'bad' : 'good', `Total profit ${money(total)}`, esc(s.explain)); ready(); }
+      };
+      box.querySelector('#bidGo').addEventListener('click', submit);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+      setFoot('', '', 'Enter a bid.'); ready(false);
+    };
+    play();
+  };
+
   R.exam = (s, el) => {
     el.innerHTML = `<span class="mono">Question ${i + 1} of ${steps.length}</span><p class="q">${esc(s.q)}</p>`;
     const box = document.createElement('div'); box.className = 'opts';
@@ -404,7 +669,7 @@
       const owns = Store.owns(course.id), allDone = ls.every(l => Store.isDone(course.id, l.id));
       let actions;
       if (nxt && canOpen(course, nxt)) actions = `<a class="btn solid" href="lesson.html?c=${course.id}&l=${nxt.id}">Next: ${esc(nxt.title)}</a>`;
-      else if (!owns && course.status === 'live') actions = `<button class="btn solid" id="unlock">Unlock the full course · £${course.price}</button>`;
+      else if (!owns && course.status === 'live') actions = `<button class="btn solid" id="unlock">Unlock the full course · ${G.money(course.price)}</button>`;
       else if (owns && allDone && course.exam) actions = `<a class="btn accent" href="lesson.html?c=${course.id}&exam=1">Take the final assessment</a>`;
       else actions = '';
       actions += `<a class="btn ghost" href="course.html?c=${course.id}">Course overview</a>`;
@@ -414,7 +679,7 @@
           <div class="tile"><span class="mono">Lesson</span><b>${esc(lesson.title)}</b></div>
           <div class="tile"><span class="mono">Right first time</span><b class="num">${graded ? `${firstTry} / ${graded}` : 'n/a'}</b></div>
         </div>
-        ${!owns && course.status === 'live' ? `<p class="prompt">That was the free lesson. The full course has ${lessonsOf(course).length} lessons, a final assessment and a certificate, for a one-off £${course.price}.</p>` : ''}
+        ${!owns && course.status === 'live' ? `<p class="prompt">That was the free lesson. The full course has ${lessonsOf(course).length} lessons, a final assessment and a certificate, for a one-off ${G.money(course.price)}.</p>` : ''}
         <div class="actions">${actions}</div>`;
     }
     stage.innerHTML = ''; stage.appendChild(el); G.paintIcons(el);

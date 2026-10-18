@@ -6,6 +6,8 @@ rm -rf dist && mkdir -p dist/assets
 cp index.html login.html app.html course.html lesson.html certificate.html privacy.html robots.txt site.webmanifest \
    favicon.ico favicon.svg favicon-32.png apple-touch-icon.png icon-192.png icon-512.png og-image.png dist/
 cp assets/*.css assets/*.js dist/assets/
+mkdir -p dist/assets/courses && cp assets/courses/*.js dist/assets/courses/
+node tools/validate-courses.js > /dev/null || { echo "Course validation failed: run node tools/validate-courses.js"; exit 1; }
 # Sitemap: indexable pages only, lastmod from the file's last commit
 # uncommitted edits count as today; otherwise the date of the last commit touching the file
 lastmod() { if [ -n "$(git status --porcelain -- "$1")" ]; then date +%F; else d=$(git log -1 --format=%cs -- "$1"); echo "${d:-$(date +%F)}"; fi; }

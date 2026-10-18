@@ -48,32 +48,47 @@ To see whether a deploy worked, open the repo's **Actions** tab. Green means don
 | `lesson.html` | The lesson player, and the final assessment |
 | `certificate.html` | The certificate page |
 | `privacy.html` | Privacy notice |
-| `assets/data.js` | **All course and lesson content.** This is where most of the work happens |
-| `assets/core.js` | Shared code: the chess piece drawings, the free/paid switch, sign-up calls |
+| `assets/courses/<id>.js` | **One file per course: every lesson and the final assessment.** This is where most of the work happens |
+| `assets/data.js` | Puts the courses in order. Nothing to edit |
+| `assets/core.js` | Shared code: the chess piece drawings, who owns which course, sign-up and checkout calls |
 | `assets/app.css` | Shared styles and colours for the app pages |
-| `functions/api/register.js` | The sign-up API. It stores people's names and emails, so check with Ayrat before changing it |
+| `functions/api/` | Sign-up (`register.js`) and payments (`checkout.js`, `confirm.js`). They store personal data and money, so check with Ayrat before changing them |
+| `docs/STEP-TYPES.md` | Every lesson step type with an example |
+| `tools/validate-courses.js` | Checks every course; run it before you push |
 | `.github/workflows/deploy.yml` | The automatic deploy. Don't change it without asking |
 | `docs/seo/` | SEO plan, keywords and the process for new public pages |
 
 ## 4. Adding or editing lessons
 
-Courses and lessons are plain data in `assets/data.js`, not code. Each lesson is a list of **steps** the player turns into screens:
+Each course is plain data in `assets/courses/<id>.js`. A lesson is a list of **steps** the player turns into screens. The ten step types are documented with examples in `docs/STEP-TYPES.md`:
 
 | Step type | What it shows |
 |---|---|
 | `read` | A title and a few short paragraphs, with an optional payoff table |
 | `choice` | A multiple-choice question. Each option has an explanation; mark the right one with `ok: true` |
-| `sort` | Sort items into two buckets ("A game" / "Not a game") |
-| `matrix` | A clickable payoff table: `task: 'explore'` to read cells, `task: 'nash'` to find equilibria (worked out automatically) |
-| `repeated` | Play several rounds against tit-for-tat |
+| `sort` | Sort items into two or three buckets |
+| `matrix` | A clickable payoff table: `explore` to read cells, `nash` to find equilibria (worked out automatically) |
+| `repeated` | Several rounds against a fixed rule (tit-for-tat, grim trigger or always-defect) |
+| `slider` | A calculator: sliders feed formulas, with an optional goal to reach |
+| `tree` | A game tree the learner solves by backward induction (checked automatically) |
+| `dialogue` | A branching conversation with a scripted counterpart |
+| `auction` | Bid against simulated rivals for a few rounds |
 | `summary` | Three key takeaways at the end |
 
-The easiest way to start is to copy an existing lesson in "Game theory foundations" and change the words. A course appears as "In production" until its lessons have `steps`. The final assessment is the `exam` block at the end of a course.
+Before you push, run:
+
+```bash
+node tools/validate-courses.js
+```
+
+It must say 0 errors. The deploy runs the same check and stops if it fails. Add `?step=4` to a lesson URL to jump straight to a step while you test.
+
+Gambit has its own vocabulary (credits and charges, True Price, Rules-First Tender, the Rulebook). Use it, not terms from other training providers; the validator rejects the most common ones.
 
 ## 5. A few rules
 
-- **Bump the version after CSS or JS changes.** Browsers cache old files. When you change anything in `assets/`, raise the `?v=` number on the asset links in every HTML page, e.g. `app.css?v=4` becomes `app.css?v=5`.
+- **Bump the version after CSS or JS changes.** Browsers cache old files. When you change anything in `assets/`, raise the `?v=` number on the asset links in every HTML page, e.g. `app.css?v=5` becomes `app.css?v=6`.
 - **Check it on your phone too.** Every page has to work at phone width.
 - **Search engine settings belong to Ayrat.** Don't change `robots.txt`, the `noindex` tags or the canonical links without asking. They decide what Google sees.
 - **No secrets in the repo.** It's public. Never commit passwords, API keys or the sign-up list.
-- **Courses are free for now.** Don't flip `FREE` in `assets/core.js`; paid courses aren't switched on yet.
+- **Prices.** "Think Three Moves Ahead" is free (`free: true`); every other course is £9.89 (`price: 9.89`, and one lesson marked `preview: true`). Don't change prices without Ayrat.

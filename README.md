@@ -22,7 +22,7 @@ You can also just double-click `index.html` to open it in a browser.
 
 ## The course app
 
-Every finished course is free during early access, but needs registration (name, email, optional opt-in to course emails). That's how the mailing list for future paid courses gets built.
+Nine courses. "Think Three Moves Ahead" (foundations) is free; the other eight cost £9.89 each, with the first lesson of each free to try. Everyone registers (name, email, optional opt-in to course emails).
 
 | Page | What it does |
 | --- | --- |
@@ -33,7 +33,9 @@ Every finished course is free during early access, but needs registration (name,
 | `certificate.html?c=<id>` | Certificate with ID, PDF download and LinkedIn link |
 | `privacy.html` | Privacy notice |
 
-Courses and lessons are data in `assets/data.js`. Each lesson is a list of steps (`read`, `sort`, `choice`, `matrix`, `repeated`, `summary`). Paid checkout is still in the code: set `FREE = false` in `assets/core.js` to bring the £19 price back.
+Each course is data in `assets/courses/<id>.js`; lessons are lists of steps documented in `docs/STEP-TYPES.md`. Check them with `node tools/validate-courses.js`.
+
+Payments: `functions/api/checkout.js` opens Stripe Checkout and `functions/api/confirm.js` records the purchase in D1 (`purchases`). Until the Pages secret `STRIPE_SECRET_KEY` is set, the buy button records interest in the `interest` table and tells the buyer payments open soon.
 
 **Backend:** Cloudflare Pages with one function (`functions/api/register.js`) writing to a D1 database (`db/schema.sql`). Live at https://gambit-7w4.pages.dev. Deploy with `./deploy.sh`, export the list with `./export-signups.sh` (add `--consented` for marketing-ready emails only). Lesson progress and certificates are still stored in the learner's browser.
 

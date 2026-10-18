@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=4">
+<link rel="stylesheet" href="assets/app.css?v=5">
 <style>
   main { padding-block: 44px 96px; display: grid; gap: 64px; }
   .hello { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
@@ -65,8 +65,17 @@
 </head>
 <body>
 <main class="wrap" id="main"></main>
-<script src="assets/core.js?v=4"></script>
-<script src="assets/data.js?v=4"></script>
+<script src="assets/core.js?v=5"></script>
+<script src="assets/courses/foundations.js?v=5"></script>
+<script src="assets/courses/strategy.js?v=5"></script>
+<script src="assets/courses/negotiation.js?v=5"></script>
+<script src="assets/courses/psychology.js?v=5"></script>
+<script src="assets/courses/game-plan.js?v=5"></script>
+<script src="assets/courses/procurement.js?v=5"></script>
+<script src="assets/courses/true-price.js?v=5"></script>
+<script src="assets/courses/auctions.js?v=5"></script>
+<script src="assets/courses/advanced-auctions.js?v=5"></script>
+<script src="assets/data.js?v=5"></script>
 <script>
 (() => {
   const { Store, esc, courseProgress, lessonsOf, playable } = G;
@@ -82,9 +91,9 @@
   const lessonsDone = COURSES.reduce((n, c) => n + courseProgress(c).done, 0);
 
   const statusBadge = c => {
-    if (G.FREE && c.status === 'live') return '<span class="badge owned">Free</span>';
+    if (c.free) return '<span class="badge owned">Free</span>';
     if (Store.owns(c.id)) return '<span class="badge owned">Owned</span>';
-    if (c.status === 'live') return `<span class="price num">£${c.price}</span>`;
+    if (c.status === 'live') return `<span class="price num">${G.money(c.price)}</span>`;
     if (c.status === 'preview') return '<span class="badge free">Preview</span>';
     return '<span class="badge">In production</span>';
   };
@@ -159,7 +168,7 @@
     <div id="learning">${resume}</div>
     ${owned.length ? `<section aria-labelledby="h-mine"><div class="sec-head"><h2 id="h-mine">My courses</h2></div><div class="grid">${owned.map(card).join('')}</div></section>` : ''}
     <section id="catalogue" aria-labelledby="h-cat">
-      <div class="sec-head"><h2 id="h-cat">All courses</h2><span class="mono">Free during early access · certificate included</span></div>
+      <div class="sec-head"><h2 id="h-cat">All courses</h2><span class="mono">Foundations free · other courses £9.89 · certificate included</span></div>
       <div class="grid">${COURSES.filter(c => !owned.includes(c)).map(card).join('')}</div>
     </section>
     <section id="certificates" aria-labelledby="h-cert">

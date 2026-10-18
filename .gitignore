@@ -4,3 +4,6 @@ dist/
 .wrangler/
 signups.csv
 node_modules/
+
+# Client training source material and course plans: private, never commit
+training-library/

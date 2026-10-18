@@ -63,12 +63,18 @@
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => paintIcons());
 
   /* ---------- Settings ---------- */
-  // Early access: every finished course is free for registered users. Flip to false to bring back £19 checkout.
-  const FREE = true;
+  // The foundations course is free (course.free); every other course is a one-off purchase.
+  const money = n => '£' + Number(n).toFixed(2);
   // Sign-ups go to the Cloudflare Pages function. Same origin on Cloudflare, absolute URL elsewhere (GitHub Pages, localhost).
   const API = /(^|\.)gambitschool\.com$|\.pages\.dev$/.test(location.hostname) ? '' : 'https://gambitschool.com';
   async function register(user) {
     const res = await fetch(API + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(user) });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || 'Something went wrong. Try again in a moment.');
+    return body;
+  }
+  async function api(path, opts) {
+    const res = await fetch(API + path, opts);
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || 'Something went wrong. Try again in a moment.');
     return body;
@@ -85,10 +91,12 @@
     signIn(user) { state.session = user; save(state); },
     signOut() { state.session = null; save(state); },
     owns(courseId) {
-      if (FREE) { const c = (window.COURSES || []).find(x => x.id === courseId); if (c && c.status === 'live') return true; }
+      const c = (window.COURSES || []).find(x => x.id === courseId);
+      if (c && c.free) return true;
       return state.purchases.includes(courseId);
     },
-    buy(courseId) { if (!this.owns(courseId)) state.purchases.push(courseId); save(state); },
+    buy(courseId) { if (!state.purchases.includes(courseId)) state.purchases.push(courseId); save(state); },
+    addPurchases(ids) { (ids || []).forEach(id => { if (!state.purchases.includes(id)) state.purchases.push(id); }); save(state); },
     isDone(courseId, lessonId) { return !!(state.progress[courseId] || {})[lessonId]; },
     complete(courseId, lessonId) { (state.progress[courseId] ||= {})[lessonId] = Date.now(); save(state); },
     exam(courseId) { return state.exams[courseId] || null; },
@@ -161,10 +169,10 @@
         <li>Final assessment, retake as often as you like</li>
         <li>Certificate of completion with a verification ID</li>
       </ul>
-      <div class="total"><span>One-off payment</span><b class="num">£${course.price}</b></div>
-      <p class="note">Prototype: no payment is taken. In the live version this button opens Stripe Checkout.</p>
-      <div style="display:grid;gap:10px">
-        <button class="btn solid block" id="coPay">Pay £${course.price} and unlock</button>
+      <div class="total"><span>One-off payment</span><b class="num">${money(course.price)}</b></div>
+      <p class="note" id="coNote">Secure card payment by Stripe. You'll come straight back to the course.</p>
+      <div style="display:grid;gap:10px" id="coBtns">
+        <button class="btn solid block" id="coPay">Pay ${money(course.price)}</button>
         <button class="btn ghost block" id="coCancel">Not now</button>
       </div></div>`;
     document.body.appendChild(s);
@@ -172,9 +180,37 @@
     s.addEventListener('click', e => { if (e.target === s) close(); });
     document.addEventListener('keydown', function k(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', k); } });
     s.querySelector('#coCancel').addEventListener('click', close);
-    s.querySelector('#coPay').addEventListener('click', () => { Store.buy(course.id); close(); toast(course.title + ' unlocked'); onDone && onDone(); });
-    s.querySelector('#coPay').focus();
+    const pay = s.querySelector('#coPay');
+    pay.addEventListener('click', async () => {
+      const u = Store.user; if (!u) { location.href = 'login.html'; return; }
+      pay.disabled = true; pay.textContent = 'Opening secure checkout…';
+      try {
+        const base = location.href.replace(/[^/]*$/, '');
+        const r = await api('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: course.id, email: u.email, base }) });
+        if (r.url) { location.href = r.url; return; }
+        s.querySelector('#coNote').textContent = `Card payments open in the next few days. We've noted that you want this course and will email ${u.email} as soon as you can buy it.`;
+        s.querySelector('#coBtns').innerHTML = '<button class="btn solid block" id="coOk">OK</button>';
+        s.querySelector('#coOk').addEventListener('click', close);
+      } catch (err) {
+        pay.disabled = false; pay.textContent = `Pay ${money(course.price)}`;
+        s.querySelector('#coNote').textContent = err instanceof TypeError ? 'We couldn\'t reach Gambit. Check your connection and try again.' : err.message;
+      }
+    });
+    pay.focus();
   }
 
-  window.G = { FREE, register, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
+  // After Stripe sends the buyer back: ?session_id=cs_... on the course page.
+  async function confirmPayment(onDone) {
+    const id = qs('session_id'); if (!id) return;
+    history.replaceState(null, '', location.pathname + '?c=' + encodeURIComponent(qs('c') || ''));
+    try {
+      const r = await api('/api/confirm?session_id=' + encodeURIComponent(id));
+      Store.buy(r.course);
+      const c = (window.COURSES || []).find(x => x.id === r.course);
+      toast((c ? c.title : 'Course') + ' unlocked. Thanks for buying.');
+      onDone && onDone();
+    } catch (err) { toast(err.message + ' If you were charged, email hello@gambitschool.com.'); }
+  }
+
+  window.G = { money, api, confirmPayment, register, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
 })();
