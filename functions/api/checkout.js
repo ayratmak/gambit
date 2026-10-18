@@ -1,17 +1,21 @@
-// POST /api/checkout  { course, email, base }
+// POST /api/checkout  { course, email, base, cf-turnstile-response }
 // Starts a Stripe Checkout payment for one paid course and returns its URL.
 // Until STRIPE_SECRET_KEY is set, it records the buyer's interest instead and returns { pending: true }.
 import { cors, reply, validEmail, ALLOWED } from '../../lib/http.js';
 import { PAID, PRICE_PENCE } from '../../lib/catalogue.js';
+import { checkHuman, isHoneypot } from '../../lib/turnstile.js';
 
 export const onRequestOptions = ({ request }) => new Response(null, { status: 204, headers: cors(request) });
 
 export async function onRequestPost({ request, env }) {
   let d;
   try { d = await request.json(); } catch { return reply(request, 400, { error: 'Send course and email as JSON.' }); }
+  if (isHoneypot(d)) return reply(request, 200, { pending: true });
   const course = String(d.course || ''), email = String(d.email || '').trim().toLowerCase().slice(0, 254);
   if (!PAID[course]) return reply(request, 400, { error: 'That course isn\'t for sale.' });
   if (!validEmail(email)) return reply(request, 400, { error: 'Sign in again, then retry.' });
+  const blocked = await checkHuman(request, env, d);
+  if (blocked) return blocked;
   const now = new Date().toISOString();
 
   if (!env.STRIPE_SECRET_KEY) {

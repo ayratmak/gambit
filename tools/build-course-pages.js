@@ -128,7 +128,7 @@ function topbar(nextPath) {
 }
 
 // Swap sign-up buttons for "Open course" when the visitor is already signed in on this device.
-const SIGNED_IN = id => `<script src="/assets/core.js?v=7"></script>
+const SIGNED_IN = id => `<script src="/assets/core.js?v=8"></script>
 <script>
   G.paintIcons();
   if (G.Store.user) {

@@ -33,6 +33,7 @@
   .proto a { text-decoration: underline; text-underline-offset: 3px; }
   .lede-s { font: 350 18px/1.45 var(--font-display); color: var(--muted); margin-top: -10px; }
   .check { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 14px; color: var(--muted); cursor: pointer; align-items: start; }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
   .check input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--accent); }
 
   .auth-art {
@@ -48,6 +49,7 @@
     .auth-art { min-height: 300px; order: -1; }
   }
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 <main class="auth">
@@ -70,6 +72,8 @@
           <input type="checkbox" id="consent" name="consent">
           <span>Email me when new courses launch. Occasional, and you can unsubscribe any time.</span>
         </label>
+        <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div class="cf-turnstile" data-turnstile data-sitekey="0x4AAAAAAFano623vo4fDemw" data-appearance="interaction-only" data-size="flexible" data-theme="auto"></div>
         <p class="err" id="err" role="alert" hidden></p>
         <button class="btn solid block" id="submit" type="submit">Start learning</button>
       </form>
@@ -85,7 +89,7 @@
   </aside>
 </main>
 
-<script src="assets/core.js?v=7"></script>
+<script src="assets/core.js?v=8"></script>
 <script>
 (() => {
   const { Store, paintIcons, drawPiece } = G;
@@ -105,8 +109,9 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email address, like you@company.com.');
     $('submit').disabled = true; $('submit').textContent = 'Signing you in…';
     let reg;
-    try { reg = await G.register({ name, email, consent }); }
-    catch (err) { return fail(err instanceof TypeError ? 'We couldn\'t reach Gambit. Check your connection and try again.' : err.message); }
+    const website = $('website').value, token = await G.humanToken($('form'));
+    try { reg = await G.register({ name, email, consent, website, 'cf-turnstile-response': token }); }
+    catch (err) { G.humanReset($('form')); return fail(err instanceof TypeError ? 'We couldn\'t reach Gambit. Check your connection and try again.' : err.message); }
     try { localStorage.setItem('gambit.last', JSON.stringify({ name, email })); } catch {}
     Store.signIn({ name, email });
     Store.addPurchases(reg && reg.purchases);

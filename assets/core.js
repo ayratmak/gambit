@@ -80,6 +80,34 @@
     return body;
   }
 
+  /* ---------- Bot check: Cloudflare Turnstile, invisible unless it needs a click ---------- */
+  // The widget's token goes to the server as cf-turnstile-response; api.js loads async on pages with a form.
+  const TURNSTILE_KEY = '0x4AAAAAAFano623vo4fDemw';
+  // Renders the widget into box (for forms built in JS) once api.js has arrived.
+  function humanCheck(box) {
+    const tick = () => {
+      if (!box.isConnected || box.dataset.tsDone) return;
+      if (!window.turnstile) { setTimeout(tick, 200); return; }
+      box.dataset.tsDone = '1';
+      try { window.turnstile.render(box, { sitekey: TURNSTILE_KEY, appearance: 'interaction-only', size: 'flexible', theme: 'auto' }); } catch { /* widget failed: the server says so */ }
+    };
+    tick();
+  }
+  // Waits up to 15 seconds for the widget's token inside scope; '' if there isn't one.
+  async function humanToken(scope) {
+    for (let i = 0; i < 75; i++) {
+      const el = scope.querySelector('[name="cf-turnstile-response"]');
+      if (el && el.value) return el.value;
+      await new Promise(r => setTimeout(r, 200));
+    }
+    return '';
+  }
+  // Tokens work once, so get a fresh one after any failed submit.
+  function humanReset(scope) {
+    const box = scope.querySelector('[data-turnstile]');
+    if (box && window.turnstile) try { window.turnstile.reset(box); } catch { /* not rendered yet */ }
+  }
+
   /* ---------- Local store (progress lives on this device for now) ---------- */
   const KEY = 'gambit.v1';
   const blank = () => ({ session: null, purchases: [], progress: {}, exams: {} });
@@ -181,6 +209,7 @@
       </ul>
       <div class="total"><span>One-off payment</span><b class="num">${money(course.price)}</b></div>
       <p class="note" id="coNote">Secure card payment by Stripe. You'll come straight back to the course.</p>
+      <div data-turnstile></div>
       <div style="display:grid;gap:10px" id="coBtns">
         <button class="btn solid block" id="coPay">Pay ${money(course.price)}</button>
         <button class="btn ghost block" id="coCancel">Not now</button>
@@ -190,19 +219,22 @@
     s.addEventListener('click', e => { if (e.target === s) close(); });
     document.addEventListener('keydown', function k(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', k); } });
     s.querySelector('#coCancel').addEventListener('click', close);
+    humanCheck(s.querySelector('[data-turnstile]'));
     const pay = s.querySelector('#coPay');
     pay.addEventListener('click', async () => {
       const u = Store.user; if (!u) { location.href = 'login.html'; return; }
       pay.disabled = true; pay.textContent = 'Opening secure checkout…';
       try {
         const base = location.href.replace(/[^/]*$/, '');
-        const r = await api('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: course.id, email: u.email, base }) });
+        const token = await humanToken(s);
+        const r = await api('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: course.id, email: u.email, base, 'cf-turnstile-response': token }) });
         if (r.url) { location.href = r.url; return; }
         s.querySelector('#coNote').textContent = `Card payments open in the next few days. We've noted that you want this course and will email ${u.email} as soon as you can buy it.`;
         s.querySelector('#coBtns').innerHTML = '<button class="btn solid block" id="coOk">OK</button>';
         s.querySelector('#coOk').addEventListener('click', close);
       } catch (err) {
         pay.disabled = false; pay.textContent = `Pay ${money(course.price)}`;
+        humanReset(s);
         s.querySelector('#coNote').textContent = err instanceof TypeError ? 'We couldn\'t reach Gambit. Check your connection and try again.' : err.message;
       }
     });
@@ -222,5 +254,5 @@
     } catch (err) { toast(err.message + ' If you were charged, email hello@gambitschool.com.'); }
   }
 
-  window.G = { safeNext, money, api, confirmPayment, register, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
+  window.G = { safeNext, money, api, confirmPayment, register, humanToken, humanReset, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
 })();
