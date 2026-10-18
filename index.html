@@ -233,7 +233,8 @@ section { padding-block: clamp(80px, 11vw, 150px); border-top: 1px solid var(--l
 
 /* Tracks */
 .tracks-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 44px; }
-.tracks-head p { color: var(--muted); max-width: 40ch; }
+.tracks-head p { color: var(--muted); max-width: 52ch; }
+.tracks-head p a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .tracks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); border-left: 1px solid var(--line); }
 a.trk { color: inherit; text-decoration: none; }
 .trk {
@@ -290,6 +291,7 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
   </div>
   <a class="pill brand" href="#top" aria-label="Gambit home"><canvas class="piece-icon" data-piece="knight" width="48" height="48" aria-hidden="true"></canvas>Gambit</a>
   <div class="pill right">
+    <a href="/courses/">Courses</a>
     <a href="login.html">Sign in</a>
     <a class="solid" href="login.html">Start free</a>
   </div>
@@ -405,58 +407,58 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
         <span class="mono eyebrow">Courses</span>
         <h2 class="h2">Nine courses, one way of thinking.</h2>
       </div>
-      <p>Self-paced, interactive lessons of about two hours each, with a certificate when you pass the final assessment. The foundations course is free; every other course is a one-off £9.89.</p>
+      <p>Self-paced, interactive lessons of about two hours each, with a certificate when you pass the final assessment. Start with the free <a href="/courses/game-theory-foundations">game theory foundations course</a>, then go deeper: a <a href="/courses/negotiation-bargaining-power">negotiation course on bargaining power</a>, <a href="/courses/negotiation-psychology">negotiation psychology</a>, a <a href="/courses/procurement-tender-design">procurement course on tender design</a> or an <a href="/courses/auction-theory">auction theory course</a>. Each is a one-off £9.89. <a href="/courses/">See all nine courses</a>.</p>
     </div>
     <div class="tracks">
-      <a class="trk" href="course.html?c=foundations">
+      <a class="trk" href="/courses/game-theory-foundations">
         <div class="trk-top"><canvas class="piece-icon" data-piece="pawn" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">Free · 10 lessons</span></div>
         <h3>Think Three Moves Ahead</h3>
         <ul><li>Payoff matrices and Nash equilibrium</li><li>Game trees and backward induction</li><li>Repeated games and quiet collusion</li></ul>
         <span class="mono">Foundations · start here</span>
       </a>
-      <a class="trk" href="course.html?c=strategy">
+      <a class="trk" href="/courses/strategic-thinking">
         <div class="trk-top"><canvas class="piece-icon" data-piece="queen" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
         <h3>Changing the Game</h3>
         <ul><li>Commitment: tie your own hands</li><li>Credible and empty threats</li><li>Redesigning a game you&#39;re losing</li></ul>
         <span class="mono">Strategy · every direction</span>
       </a>
-      <a class="trk" href="course.html?c=negotiation">
+      <a class="trk" href="/courses/negotiation-bargaining-power">
         <div class="trk-top"><canvas class="piece-icon" data-piece="knight" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
         <h3>Bargaining Power</h3>
         <ul><li>Growing the pie before you split it</li><li>BATNA, walk-away points and the ZOPA</li><li>Information, deadlines and focal points</li></ul>
         <span class="mono">Negotiation · never moves straight</span>
       </a>
-      <a class="trk" href="course.html?c=psychology">
+      <a class="trk" href="/courses/negotiation-psychology">
         <div class="trk-top"><canvas class="piece-icon" data-piece="king" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
         <h3>The Psychology of the Deal</h3>
         <ul><li>Anchors, framing and decoys</li><li>Fairness and the ultimatum game</li><li>A tactics toolkit you can use on Monday</li></ul>
         <span class="mono">Negotiation · read the room</span>
       </a>
-      <a class="trk" href="course.html?c=game-plan">
+      <a class="trk" href="/courses/negotiation-preparation">
         <div class="trk-top"><canvas class="piece-icon" data-piece="knight" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
         <h3>From Facts to Game Plan</h3>
         <ul><li>Facts, Power, Plan, Play, Learn</li><li>Carrots, sticks and the lever check</li><li>A full negotiation, from brief to close</li></ul>
         <span class="mono">Negotiation · the practitioner&#39;s method</span>
       </a>
-      <a class="trk" href="course.html?c=procurement">
+      <a class="trk" href="/courses/procurement-tender-design">
         <div class="trk-top"><canvas class="piece-icon" data-piece="rook" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
         <h3>Designing a Winning Tender</h3>
         <ul><li>Race, Ruler, Rulebook</li><li>Decide first, then let suppliers bid</li><li>Holding the line on award day</li></ul>
         <span class="mono">Procurement · holds the line</span>
       </a>
-      <a class="trk" href="course.html?c=true-price">
+      <a class="trk" href="/courses/supplier-evaluation-total-cost">
         <div class="trk-top"><canvas class="piece-icon" data-piece="rook" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
         <h3>Apples and Pears: True Price</h3>
         <ul><li>Credits and charges for unequal suppliers</li><li>Whole-life cost in today&#39;s money</li><li>A change price list that stops cost creep</li></ul>
         <span class="mono">Procurement · like for like</span>
       </a>
-      <a class="trk" href="course.html?c=auctions">
+      <a class="trk" href="/courses/auction-theory">
         <div class="trk-top"><canvas class="piece-icon" data-piece="bishop" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
         <h3>Auctions Decoded</h3>
         <ul><li>Four formats, and when each wins</li><li>Bid shading and truthful bidding</li><li>The winner&#39;s curse, played for real</li></ul>
         <span class="mono">Auctions · the long diagonal</span>
       </a>
-      <a class="trk" href="course.html?c=advanced-auctions">
+      <a class="trk" href="/courses/advanced-auction-design">
         <div class="trk-top"><canvas class="piece-icon" data-piece="bishop" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
         <h3>When the Textbook Breaks</h3>
         <ul><li>Reserve prices and strong favourites</li><li>Collusion and signalling in auctions</li><li>What a tender reveals for later</li></ul>
@@ -471,7 +473,7 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
     <div class="closing-row">
       <p>Start with the free foundations course, then pick the track that matches your next deal.</p>
       <div class="cta-row">
-        <a class="btn solid" href="course.html?c=foundations">Start the free course</a>
+        <a class="btn solid" href="/courses/game-theory-foundations">Start the free course</a>
         <a class="btn bracket" href="login.html">Sign in</a>
       </div>
     </div>

@@ -17,3 +17,4 @@ Site: gambitschool.com   Locales: en-GB only   Template page: none yet. The firs
 - Cadence: 1 page a week, never more than 1 a day. Hold it, do not burst.
 - Bump the ?v= query on asset links when CSS/JS changes.
 - Read docs/seo/standards.md before every draft. Those are past rejections; do not repeat them.
+- Course pages (/courses/<slug>) are generated at build by tools/build-course-pages.js from assets/courses/*.js. Change titles, descriptions and the "about" copy in tools/course-pages.config.js; lesson titles and teasers come from the course data. They are the template for any future catalogue page.

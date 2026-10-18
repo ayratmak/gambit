@@ -142,7 +142,7 @@
       const back = encodeURIComponent(location.pathname.split('/').pop() + location.search);
       el.innerHTML = `<div class="wrap topbar-in">
         <a class="brand" href="index.html"><canvas class="piece-icon" data-piece="knight" aria-hidden="true"></canvas>Gambit</a>
-        <nav class="tabs" aria-label="Site"><a href="index.html#tracks" ${active === 'catalogue' ? 'aria-current="page"' : ''}>All courses</a></nav>
+        <nav class="tabs" aria-label="Site"><a href="courses/" ${active === 'catalogue' ? 'aria-current="page"' : ''}>All courses</a></nav>
         <div style="display:flex;gap:8px"><a class="btn ghost hide-sm" href="login.html?next=${back}">Sign in</a><a class="btn solid" href="login.html?next=${back}">Start free</a></div></div>`;
       document.body.prepend(el); paintIcons(el); return;
     }

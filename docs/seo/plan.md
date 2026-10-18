@@ -1,6 +1,8 @@
 # SEO plan: gambitschool.com   Written 2026-10-12   Review weekly
 
-Status: new domain (registered 12 Oct 2026), no Search Console data. Expect little Google traffic for about six months. Single locale (en-GB) on a .com, so no country-code caveat.
+Status: new domain (registered 12 Oct 2026), no Search Console data.
+
+**18 Oct 2026: all 9 course pages shipped at once, at Ayrat's request.** They are catalogue pages (one per product, each with its own syllabus, outcomes, FAQ and a playable free lesson), not editorial content, so they are exempt from the 1-page-a-week cadence. The cadence applies again from here to tool and article pages. Course pages are generated from the course data by tools/build-course-pages.js; edit titles and copy in tools/course-pages.config.js. Expect little Google traffic for about six months. Single locale (en-GB) on a .com, so no country-code caveat.
 
 The structural problem to solve first: only the landing page is public. Every course, lesson and game sits behind the login redirect, so Google sees one page. SEO growth needs public, static pages that carry real content and an interactive element, each with a sign-up CTA.
 
@@ -15,7 +17,7 @@ The structural problem to solve first: only the landing page is public. Every co
 |---|---|---|---|---|
 | 1 | /nash-equilibrium-calculator | concept calculator | Specific tool queries in Suggest (2x2, 3x3, mixed); the solver already exists in the lesson engine | Working 2x2/3x3 solver with best-response highlighting and a plain-English explanation of the result |
 | 2 | /prisoners-dilemma-game | classic game online | "play online / free" variants in Suggest; the repeated game already exists | Playable 8-round game against named strategies (tit-for-tat, always defect, grudger) with a debrief |
-| 3 | /courses/game-theory-foundations | topic course free with certificate | Public version of the one finished course: syllabus, outcomes, sample lesson, certificate preview | Embedded free first lesson, playable without sign-up |
+| 3 (shipped 18 Oct) | /courses/game-theory-foundations | topic course free with certificate | Public version of the one finished course: syllabus, outcomes, sample lesson, certificate preview | Embedded free first lesson, playable without sign-up |
 
 ## Weeks 4-8: cadence
 - 1 page a week, never more than 1 a day: next row in each pattern (3x3 solver variant, mixed-strategy calculator, then other classic games: chicken, stag hunt, ultimatum)

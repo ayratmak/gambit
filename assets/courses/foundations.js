@@ -41,7 +41,7 @@
         title: 'The language of games',
         lessons: [
           {
-            id: 'what-is-a-game', title: 'Why incentives bite back', minutes: 10, kind: 'Concept',
+            id: 'what-is-a-game', title: 'Why incentives bite back', minutes: 10, kind: 'Concept', preview: true,
             steps: [
               { t: 'read', title: 'People react to rules', body: [
                 'The story goes that in colonial Delhi, the British authorities wanted fewer cobras on the streets. So they paid a cash reward for every dead cobra people brought in. It sounded like a simple, sensible plan.',

@@ -196,7 +196,7 @@
   <button class="btn solid" id="next" disabled>Continue</button>
 </div></footer>
 
-<script src="assets/core.js?v=6"></script>
+<script src="assets/core.js?v=7"></script>
 <script src="assets/courses/foundations.js?v=5"></script>
 <script src="assets/courses/strategy.js?v=5"></script>
 <script src="assets/courses/negotiation.js?v=5"></script>
@@ -210,10 +210,12 @@
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, canOpen } = G;
-  if (!G.requireUser()) return;
   const course = COURSES.find(c => c.id === G.qs('c'));
   const examMode = G.qs('exam') === '1';
   const lesson = course && lessonsOf(course).find(l => l.id === G.qs('l'));
+  // The preview lesson of every course is playable without an account; everything else needs sign-in.
+  const anon = !Store.user;
+  if (anon && (examMode || !lesson || !lesson.preview)) { G.requireUser(); return; }
   const stage = document.getElementById('stage'), foot = document.getElementById('foot'), fb = document.getElementById('fb'), nextBtn = document.getElementById('next');
   const back = course ? 'course.html?c=' + course.id : 'app.html';
   document.getElementById('close').href = back;
@@ -668,6 +670,15 @@
       const ls = lessonsOf(course).filter(playable), idx = ls.indexOf(lesson), nxt = ls[idx + 1];
       const owns = Store.owns(course.id), allDone = ls.every(l => Store.isDone(course.id, l.id));
       let actions;
+      if (anon) {
+        const nx = lessonsOf(course).filter(playable)[lessonsOf(course).filter(playable).indexOf(lesson) + 1];
+        const target = nx && (course.free || Store.owns(course.id)) ? `lesson.html?c=${course.id}&l=${nx.id}` : `course.html?c=${course.id}${course.free ? '' : '&buy=1'}`;
+        el.innerHTML = `<canvas class="piece-icon" data-piece="${course.piece}" data-tone="accent" aria-hidden="true"></canvas>
+          <span class="mono">${esc(course.title)}</span><h2>Lesson <em>complete.</em></h2>
+          <p class="prompt">${course.free ? `Sign up free to save your progress and carry on with the other ${lessonsOf(course).length - 1} lessons, then earn your certificate.` : `The full course has ${lessonsOf(course).length} lessons, a final assessment and a certificate, for a one-off ${G.money(course.price)}. Signing up is free.`}</p>
+          <div class="actions"><a class="btn solid" href="login.html?next=${encodeURIComponent(target)}">${course.free ? 'Sign up free and continue' : 'Sign up to unlock the course'}</a><a class="btn ghost" href="course.html?c=${course.id}">Course overview</a></div>`;
+        stage.innerHTML = ''; stage.appendChild(el); G.paintIcons(el); return;
+      }
       if (nxt && canOpen(course, nxt)) actions = `<a class="btn solid" href="lesson.html?c=${course.id}&l=${nxt.id}">Next: ${esc(nxt.title)}</a>`;
       else if (!owns && course.status === 'live') actions = `<button class="btn solid" id="unlock">Unlock the full course · ${G.money(course.price)}</button>`;
       else if (owns && allDone && course.exam) actions = `<a class="btn accent" href="lesson.html?c=${course.id}&exam=1">Take the final assessment</a>`;

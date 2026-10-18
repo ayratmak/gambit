@@ -64,7 +64,7 @@
 </head>
 <body>
 <main class="wrap" id="main"></main>
-<script src="assets/core.js?v=6"></script>
+<script src="assets/core.js?v=7"></script>
 <script src="assets/courses/foundations.js?v=5"></script>
 <script src="assets/courses/strategy.js?v=5"></script>
 <script src="assets/courses/negotiation.js?v=5"></script>
@@ -83,7 +83,7 @@
   const join = path => 'login.html?next=' + encodeURIComponent(path);
   const course = COURSES.find(c => c.id === G.qs('c'));
   const main = document.getElementById('main');
-  if (!course) { main.innerHTML = `<a class="crumb" href="${signedIn ? 'app.html' : 'index.html#tracks'}">← All courses</a><h1>We couldn't find that course.</h1>`; return; }
+  if (!course) { main.innerHTML = `<a class="crumb" href="${signedIn ? 'app.html' : 'courses/'}">← All courses</a><h1>We couldn't find that course.</h1>`; return; }
   document.title = course.title + ' · Gambit';
   const lockSvg = '<svg class="lock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-label="Locked"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>';
 
@@ -149,7 +149,7 @@
         ${pv ? `<a class="btn solid block" href="lesson.html?c=${course.id}&l=${pv.id}">Play the preview lesson</a>` : ''}`;
     }
 
-    main.innerHTML = `<a class="crumb" href="${signedIn ? 'app.html#catalogue' : 'index.html#tracks'}">← All courses</a>
+    main.innerHTML = `<a class="crumb" href="${signedIn ? 'app.html#catalogue' : 'courses/'}">← All courses</a>
       <div class="layout">
         <div>
           <div class="hero">
