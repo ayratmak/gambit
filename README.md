@@ -47,3 +47,5 @@ Every push to GitHub deploys automatically to Cloudflare Pages (`.github/workflo
 The run and its URL show under the repo's **Actions** tab. No Cloudflare account is needed to contribute.
 
 After editing CSS or JS in `assets/`, bump the `?v=` number on the asset links in the HTML pages so browsers fetch the new version.
+
+Working on the site with someone else? See [CONTRIBUTING.md](CONTRIBUTING.md).

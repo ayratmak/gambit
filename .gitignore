@@ -1,6 +1,5 @@
 .claude/
 .DS_Store
-gambit.html
 dist/
 .wrangler/
 signups.csv
