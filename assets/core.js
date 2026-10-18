@@ -122,6 +122,8 @@
 
   /* ---------- Page helpers ---------- */
   const qs = k => new URLSearchParams(location.search).get(k);
+  // Only ever send people on to one of our own pages (blocks javascript: and off-site redirects).
+  const safeNext = (n, fallback = 'app.html') => /^[a-z-]+(\.html)?(\?[\w=&%.-]*)?$/.test(n || '') ? n : fallback;
   const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const initials = name => (name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
   function toast(msg) {
@@ -136,6 +138,14 @@
   function header(active) {
     const u = Store.user;
     const el = document.createElement('header'); el.className = 'topbar';
+    if (!u) {
+      const back = encodeURIComponent(location.pathname.split('/').pop() + location.search);
+      el.innerHTML = `<div class="wrap topbar-in">
+        <a class="brand" href="index.html"><canvas class="piece-icon" data-piece="knight" aria-hidden="true"></canvas>Gambit</a>
+        <nav class="tabs" aria-label="Site"><a href="index.html#tracks" ${active === 'catalogue' ? 'aria-current="page"' : ''}>All courses</a></nav>
+        <div style="display:flex;gap:8px"><a class="btn ghost hide-sm" href="login.html?next=${back}">Sign in</a><a class="btn solid" href="login.html?next=${back}">Start free</a></div></div>`;
+      document.body.prepend(el); paintIcons(el); return;
+    }
     el.innerHTML = `<div class="wrap topbar-in">
       <a class="brand" href="app.html"><canvas class="piece-icon" data-piece="knight" aria-hidden="true"></canvas>Gambit</a>
       <nav class="tabs" aria-label="App">
@@ -212,5 +222,5 @@
     } catch (err) { toast(err.message + ' If you were charged, email hello@gambitschool.com.'); }
   }
 
-  window.G = { money, api, confirmPayment, register, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
+  window.G = { safeNext, money, api, confirmPayment, register, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
 })();

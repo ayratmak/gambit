@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=5">
+<link rel="stylesheet" href="assets/app.css?v=6">
 <style>
   main { padding-block: 36px 96px; }
   .crumb { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; margin-bottom: 28px; }
@@ -64,7 +64,7 @@
 </head>
 <body>
 <main class="wrap" id="main"></main>
-<script src="assets/core.js?v=5"></script>
+<script src="assets/core.js?v=6"></script>
 <script src="assets/courses/foundations.js?v=5"></script>
 <script src="assets/courses/strategy.js?v=5"></script>
 <script src="assets/courses/negotiation.js?v=5"></script>
@@ -78,11 +78,12 @@
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, courseProgress, canOpen } = G;
-  if (!G.requireUser()) return;
+  const signedIn = !!Store.user;
   G.header('catalogue');
+  const join = path => 'login.html?next=' + encodeURIComponent(path);
   const course = COURSES.find(c => c.id === G.qs('c'));
   const main = document.getElementById('main');
-  if (!course) { main.innerHTML = '<a class="crumb" href="app.html">← All courses</a><h1>We couldn\'t find that course.</h1>'; return; }
+  if (!course) { main.innerHTML = `<a class="crumb" href="${signedIn ? 'app.html' : 'index.html#tracks'}">← All courses</a><h1>We couldn't find that course.</h1>`; return; }
   document.title = course.title + ' · Gambit';
   const lockSvg = '<svg class="lock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-label="Locked"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>';
 
@@ -114,7 +115,20 @@
 
     const C = 2 * Math.PI * 26;
     let side;
-    if (owns) {
+    if (!signedIn) {
+      const pv = lessonsOf(course).find(l => l.preview);
+      const first = lessonsOf(course).find(playable);
+      side = course.free
+        ? `<div class="price-big num">Free<small>certificate included</small></div>
+          <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li><li>Final assessment</li><li>Certificate of completion</li></ul>
+          <a class="btn solid block" href="${join('lesson.html?c=' + course.id + '&l=' + first.id)}">Sign up free and start</a>
+          <p class="muted" style="font-size:13px">Just your name and email. No card needed.</p>`
+        : `<div class="price-big num">${G.money(course.price)}<small>one-off</small></div>
+          <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li><li>Final assessment</li><li>Certificate of completion</li><li>Lifetime access</li></ul>
+          <a class="btn solid block" href="${join('course.html?c=' + course.id + '&buy=1')}">Sign up and buy · ${G.money(course.price)}</a>
+          ${pv ? `<a class="btn ghost block" href="${join('lesson.html?c=' + course.id + '&l=' + pv.id)}">Sign up free and try lesson one</a>` : ''}
+          <p class="muted" style="font-size:13px">Signing up is free. You only pay when you buy the course.</p>`;
+    } else if (owns) {
       const nextHref = p.next ? `lesson.html?c=${course.id}&l=${p.next.id}` : (exam && exam.passed ? `certificate.html?c=${course.id}` : `lesson.html?c=${course.id}&exam=1`);
       const nextLabel = p.next ? (p.done ? 'Continue' : 'Start the course') : (exam && exam.passed ? 'View certificate' : 'Take the assessment');
       side = `<div class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p.pct)}"/></svg>
@@ -135,7 +149,7 @@
         ${pv ? `<a class="btn solid block" href="lesson.html?c=${course.id}&l=${pv.id}">Play the preview lesson</a>` : ''}`;
     }
 
-    main.innerHTML = `<a class="crumb" href="app.html#catalogue">← All courses</a>
+    main.innerHTML = `<a class="crumb" href="${signedIn ? 'app.html#catalogue' : 'index.html#tracks'}">← All courses</a>
       <div class="layout">
         <div>
           <div class="hero">
@@ -155,7 +169,7 @@
   }
   render();
   G.confirmPayment(render);
-  if (G.qs('buy') === '1' && !Store.owns(course.id) && course.status === 'live') G.checkout(course, render);
+  if (signedIn && G.qs('buy') === '1' && !Store.owns(course.id) && course.status === 'live') G.checkout(course, render);
 })();
 </script>
 </body>

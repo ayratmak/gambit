@@ -166,3 +166,6 @@ a.ccard:hover { border-color: var(--line-strong); transform: translateY(-2px); }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* signed-out header: drop the secondary button on very narrow phones */
+@media (max-width: 420px) { .hide-sm { display: none !important; } }
