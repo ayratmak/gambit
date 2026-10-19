@@ -236,7 +236,7 @@ ${jsonld.map(j => `<script type="application/ld+json">${JSON.stringify(j)}</scri
 </main>
 <footer class="ft"><div class="wrap">Gambit is run by Origin Collective Limited. <a href="/privacy.html">Privacy</a> · <a href="mailto:hello@gambitschool.com">hello@gambitschool.com</a></div></footer>
 <div class="sticky"><div><b>${money(b.price)}</b><span>${paid.length} courses · save ${save}%</span></div>${buyBtn('', 'Get the track')}</div>
-<script src="/assets/core.js?v=9"></script>
+<script src="/assets/core.js?v=10"></script>
 <script src="/assets/bundles.js?v=1"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>

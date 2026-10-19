@@ -89,7 +89,7 @@
   </aside>
 </main>
 
-<script src="assets/core.js?v=9"></script>
+<script src="assets/core.js?v=10"></script>
 <script>
 (() => {
   const { Store, paintIcons, drawPiece } = G;
@@ -115,6 +115,7 @@
     try { localStorage.setItem('gambit.last', JSON.stringify({ name, email })); } catch {}
     Store.signIn({ name, email });
     Store.addPurchases(reg && reg.purchases);
+    Store.addCertificates(reg && reg.certificates);
     location.href = next;
   });
 

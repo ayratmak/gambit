@@ -65,7 +65,7 @@
 </head>
 <body>
 <main class="wrap" id="main"></main>
-<script src="assets/core.js?v=9"></script>
+<script src="assets/core.js?v=10"></script>
 <script src="assets/courses/foundations.js?v=5"></script>
 <script src="assets/courses/strategy.js?v=5"></script>
 <script src="assets/courses/negotiation.js?v=5"></script>
@@ -154,7 +154,7 @@
   const certBlock = certs.length
     ? `<div class="certs">${certs.map(c => { const e = Store.exam(c.id); return `<div class="cert-row">
         <canvas class="piece-icon" data-piece="${c.piece}" data-tone="accent" aria-hidden="true"></canvas>
-        <div><h4>${esc(c.title)}</h4><span class="mono num">${new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · ${esc(e.certId)}</span></div>
+        <div><h4>${esc(c.title)}</h4><span class="mono num">${new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · ${esc(e.saved && e.certId ? e.certId : "Not verified yet")}</span></div>
         <a class="btn ghost small" href="certificate.html?c=${c.id}">View certificate</a></div>`; }).join('')}</div>`
     : `<div class="empty"><div><h3>No certificates yet.</h3><p>Finish every lesson in a course and pass its final assessment to earn one. Each certificate carries a unique ID.</p></div></div>`;
 

@@ -28,3 +28,18 @@ CREATE TABLE IF NOT EXISTS interest (
   created_at TEXT NOT NULL,
   PRIMARY KEY (email, course)
 );
+
+-- Certificates, issued by /api/certificate when the server has marked a passing assessment.
+-- One per person per course; a better retake updates the score but keeps the ID.
+CREATE TABLE IF NOT EXISTS certificates (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  name TEXT NOT NULL,
+  course TEXT NOT NULL,
+  score INTEGER NOT NULL,
+  total INTEGER NOT NULL,
+  issued_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE (email, course)
+);
+CREATE INDEX IF NOT EXISTS certificates_email ON certificates (email);

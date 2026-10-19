@@ -7,6 +7,7 @@ cp index.html login.html app.html course.html lesson.html certificate.html priva
    favicon.ico favicon.svg favicon-32.png apple-touch-icon.png icon-192.png icon-512.png og-image.png dist/
 cp assets/*.css assets/*.js dist/assets/
 mkdir -p dist/assets/courses && cp assets/courses/*.js dist/assets/courses/
+node tools/gen-exam-keys.js > /dev/null
 node tools/validate-courses.js > /dev/null || { echo "Course validation failed: run node tools/validate-courses.js"; exit 1; }
 # lastmod for the sitemap: the date of the file's last commit
 # uncommitted edits count as today; otherwise the date of the last commit touching the file

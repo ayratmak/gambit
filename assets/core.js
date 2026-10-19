@@ -130,12 +130,20 @@
     isDone(courseId, lessonId) { return !!(state.progress[courseId] || {})[lessonId]; },
     complete(courseId, lessonId) { (state.progress[courseId] ||= {})[lessonId] = Date.now(); save(state); },
     exam(courseId) { return state.exams[courseId] || null; },
-    recordExam(courseId, score, total, passed) {
+    // cert is the server's certificate ({ id, score, issued_at }) when the pass was recorded; a certificate
+    // without one (saved: false) only exists on this device and can't be verified.
+    recordExam(courseId, score, total, passed, cert) {
       const prev = state.exams[courseId];
-      const certId = prev && prev.certId ? prev.certId : 'GMB-' + courseId.slice(0, 3).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase() + '-' + Date.now().toString(36).slice(-4).toUpperCase();
       if (prev && prev.passed && !passed) return prev; // a failed retake never removes a pass
-      state.exams[courseId] = { score, total, passed, date: Date.now(), certId: passed ? certId : null };
+      if (passed && cert) state.exams[courseId] = { score: Math.max(score, cert.score || 0), total, passed, date: Date.parse(cert.issued_at) || Date.now(), certId: cert.id, saved: true };
+      else if (passed) state.exams[courseId] = { score, total, passed, date: Date.now(), certId: prev && prev.saved ? prev.certId : null, saved: !!(prev && prev.saved) };
+      else state.exams[courseId] = { score, total, passed, date: Date.now(), certId: null };
       save(state); return state.exams[courseId];
+    },
+    // Certificates from the server at sign-in: they replace anything unsaved on this device.
+    addCertificates(list) {
+      (list || []).forEach(c => { state.exams[c.course] = { score: c.score, total: c.total, passed: true, date: Date.parse(c.issued_at) || Date.now(), certId: c.id, saved: true }; });
+      save(state);
     },
     reset() { state = blank(); save(state); }
   };

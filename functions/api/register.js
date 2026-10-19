@@ -43,5 +43,10 @@ export async function onRequestPost({ request, env }) {
   // Admin accounts (Pages secret ADMIN_EMAILS, comma-separated) get every paid course.
   const admins = String(env.ADMIN_EMAILS || '').toLowerCase().split(',').map(x => x.trim()).filter(Boolean);
   if (admins.includes(email)) purchases = Object.keys(PAID);
-  return reply(request, 200, { ok: true, purchases });
+  let certificates = [];
+  try {
+    const { results } = await env.DB.prepare('SELECT id, course, score, total, issued_at FROM certificates WHERE email = ?1').bind(email).all();
+    certificates = results || [];
+  } catch { /* certificates table not created yet */ }
+  return reply(request, 200, { ok: true, purchases, certificates });
 }

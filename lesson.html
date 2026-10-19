@@ -197,7 +197,7 @@
   <button class="btn solid" id="next" disabled>Continue</button>
 </div></footer>
 
-<script src="assets/core.js?v=9"></script>
+<script src="assets/core.js?v=10"></script>
 <script src="assets/courses/foundations.js?v=5"></script>
 <script src="assets/courses/strategy.js?v=5"></script>
 <script src="assets/courses/negotiation.js?v=5"></script>
@@ -228,7 +228,7 @@
 
   const steps = examMode ? course.exam.questions.map(q => ({ t: 'exam', ...q })) : lesson.steps;
   document.title = (examMode ? 'Final assessment' : lesson.title) + ' · Gambit';
-  let i = examMode ? 0 : Math.max(0, Math.min(steps.length - 1, (+G.qs("step") || 1) - 1)), firstTry = 0, graded = 0, examScore = 0;
+  let i = examMode ? 0 : Math.max(0, Math.min(steps.length - 1, (+G.qs("step") || 1) - 1)), firstTry = 0, graded = 0, examScore = 0, examPicks = [];
   const segs = document.getElementById('segs');
   segs.innerHTML = steps.map(() => '<i></i>').join('');
 
@@ -626,6 +626,7 @@
     R._check = () => {
       if (checked) return false;
       checked = true;
+      examPicks[i] = pick;
       const right = pick === s.answer; if (right) examScore++;
       box.querySelectorAll('.opt').forEach((x, k) => { x.disabled = true; x.classList.remove('sel'); if (k === s.answer) x.classList.add('good'); else if (k === pick) x.classList.add('bad'); });
       setFoot(right ? 'good' : 'bad', right ? 'Correct' : 'Incorrect', esc(s.why));
@@ -650,6 +651,21 @@
   });
   document.addEventListener('keydown', e => { if (e.key === 'Enter' && !nextBtn.disabled && document.activeElement.tagName !== 'BUTTON') nextBtn.click(); });
 
+  // Sends the answers to the server, which marks them again and issues a certificate with a public verify page.
+  async function saveCertificate(card, attempt = 1) {
+    const say = (t, retry) => { const p = card.querySelector('#certStatus'); if (!p) return; p.innerHTML = t + (retry ? ' <button class="btn ghost small" id="certRetry" type="button">Try again</button>' : ''); const r = card.querySelector('#certRetry'); r && r.addEventListener('click', () => { say('Issuing your certificate…'); saveCertificate(card, attempt + 1); }); };
+    try {
+      const u = Store.user;
+      const r = await G.api('/api/certificate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email, name: u.name, course: course.id, answers: examPicks }) });
+      if (r.passed && r.certificate) {
+        Store.recordExam(course.id, r.score, r.total, true, r.certificate);
+        say(`Certificate <b>${esc(r.certificate.id)}</b> is saved to your account. Anyone can check it at gambitschool.com/verify/${esc(r.certificate.id)}.`);
+      } else say('The server marked this attempt below the pass mark, so no certificate was issued. Please retake the assessment.');
+    } catch (err) {
+      say(esc(err instanceof TypeError ? 'We couldn\'t reach Gambit to save your certificate.' : err.message), true);
+    }
+  }
+
   function finish() {
     [...segs.children].forEach(x => x.className = 'on');
     foot.hidden = true;
@@ -657,11 +673,13 @@
     if (examMode) {
       const total = steps.length, passed = examScore >= course.exam.pass;
       const rec = Store.recordExam(course.id, examScore, total, passed);
+      if (passed) saveCertificate(el);
       el.innerHTML = passed
         ? `<canvas class="piece-icon" data-piece="king" data-tone="accent" aria-hidden="true"></canvas>
            <span class="mono">Final assessment</span><h2>You <em>passed.</em></h2>
            <div class="tiles"><div class="tile"><span class="mono">Score</span><b class="num">${examScore} / ${total}</b></div><div class="tile"><span class="mono">Pass mark</span><b class="num">${course.exam.pass} / ${total}</b></div></div>
-           <div class="actions"><a class="btn accent" href="certificate.html?c=${course.id}">Get your certificate</a><a class="btn ghost" href="app.html">Back to my learning</a></div>`
+           <p class="prompt" id="certStatus">Issuing your certificate…</p>
+           <div class="actions"><a class="btn accent" id="certBtn" href="certificate.html?c=${course.id}">Get your certificate</a><a class="btn ghost" href="app.html">Back to my learning</a></div>`
         : `<canvas class="piece-icon" data-piece="pawn" aria-hidden="true"></canvas>
            <span class="mono">Final assessment</span><h2>Not this time.</h2>
            <p class="prompt">You scored ${examScore} of ${total}. You need ${course.exam.pass} to pass. Every question comes with an explanation, so a second attempt usually goes better. ${rec.passed ? 'Your earlier pass still stands.' : ''}</p>
