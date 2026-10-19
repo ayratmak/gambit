@@ -63,15 +63,20 @@ function checkStep(s, w) {
         s.outputs.forEach(o => { const v = run(o.expr, env); if (!Number.isFinite(v)) err(w, `output ${o.id || o.label} is not a number at defaults`); if (o.id) env[o.id] = v; });
         if (s.goal) {
           if (run(s.goal.expr, env)) warn(w, 'goal is already met at default values');
-          // try to reach the goal by sampling the input space
+          // Can the goal be reached? Try every slider combination when there are few enough, otherwise a fixed
+          // pseudo-random sample (deterministic, so the deploy check never flakes).
+          const sizes = s.inputs.map(inp => Math.round((inp.max - inp.min) / (inp.step || 1)) + 1);
+          const combos = sizes.reduce((a, b) => a * b, 1);
+          let seed = 12345; const rand = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+          const tries = combos <= 200000 ? combos : 60000;
           let reach = false;
-          for (let k = 0; k < 4000 && !reach; k++) {
-            const e = {};
-            s.inputs.forEach(inp => { const n = Math.round((inp.max - inp.min) / inp.step); e[inp.id] = inp.min + Math.floor(Math.random() * (n + 1)) * inp.step; });
+          for (let k = 0; k < tries && !reach; k++) {
+            const e = {}; let rest = k;
+            s.inputs.forEach((inp, j) => { const idx = combos <= 200000 ? rest % sizes[j] : Math.floor(rand() * sizes[j]); if (combos <= 200000) rest = Math.floor(rest / sizes[j]); e[inp.id] = inp.min + idx * (inp.step || 1); });
             s.outputs.forEach(o => { if (o.id) e[o.id] = run(o.expr, e); });
             if (run(s.goal.expr, e)) reach = true;
           }
-          if (!reach) err(w, 'goal never reached in 4,000 random tries');
+          if (!reach) err(w, combos <= 200000 ? 'goal can\'t be reached with any slider setting' : 'goal not reached in 60,000 sampled settings');
         }
       } catch (x) { err(w, 'expression error: ' + x.message); }
       break;
