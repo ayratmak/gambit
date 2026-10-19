@@ -42,3 +42,13 @@ Unverified columns: Volume and "Page type in top 3" are n/a everywhere. Suggest 
 | game theory in purchasing | en-GB | n/a | - | n/a, check by hand | none |
 | game theory for business strategy | en-GB | n/a | - | n/a, check by hand | none |
 | game theory for managers | en-GB | n/a | - | n/a, check by hand | none |
+
+## Pattern: [audience] negotiation training   Intent: commercial (training landing)   Added 2026-10-19, source Google Suggest (gl=gb)
+| Keyword | Locale | Volume | Volume source | Page type in top 3 | Existing URL |
+|---|---|---|---|---|---|
+| procurement negotiation training | en-GB | n/a | - | n/a, check by hand | /for/procurement |
+| purchasing negotiation training | en-GB | n/a | - | n/a, check by hand | /for/procurement |
+| procurement training courses | en-GB | n/a | - | n/a, check by hand | /for/procurement |
+| sales negotiation training | en-GB | n/a | - | n/a, check by hand | /for/sales |
+| negotiation skills for sales professionals | en-GB | n/a | - | n/a, check by hand | /for/sales |
+| game theory for students | en-GB | n/a | - | n/a, check by hand | /for/students |

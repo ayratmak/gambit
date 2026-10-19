@@ -66,6 +66,8 @@
   // The foundations course is free (course.free); every other course is a one-off purchase.
   const money = n => '£' + Number(n).toFixed(2);
   // Sign-ups go to the Cloudflare Pages function. Same origin on Cloudflare, absolute URL elsewhere (GitHub Pages, localhost).
+  // Site root, worked out from where this script is served (works under / and under /gambit/ on GitHub Pages).
+  const ROOT = ((document.currentScript && document.currentScript.src) || location.href).replace(/assets\/core\.js.*$/, '');
   const API = /(^|\.)gambitschool\.com$|\.pages\.dev$/.test(location.hostname) ? '' : 'https://gambitschool.com';
   async function register(user) {
     const res = await fetch(API + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(user) });
@@ -225,7 +227,7 @@
       const u = Store.user; if (!u) { location.href = 'login.html'; return; }
       pay.disabled = true; pay.textContent = 'Opening secure checkout…';
       try {
-        const base = location.href.replace(/[^/]*$/, '');
+        const base = ROOT;
         const token = await humanToken(s);
         const r = await api('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: course.id, email: u.email, base, 'cf-turnstile-response': token }) });
         if (r.url) { location.href = r.url; return; }
@@ -241,18 +243,52 @@
     pay.focus();
   }
 
+  // Checkout for a track bundle (several courses, one price). bundle = window.GAMBIT_BUNDLES[id].
+  function checkoutBundle(id) {
+    const b = (window.GAMBIT_BUNDLES || {})[id]; if (!b) return;
+    const u = Store.user;
+    if (!u) { location.href = ROOT + 'login.html?next=' + encodeURIComponent('app.html?bundle=' + id); return; }
+    const s = document.createElement('div'); s.className = 'scrim';
+    s.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="coTitle">
+      <span class="mono">Checkout</span>
+      <h2 id="coTitle">${esc(b.title)}</h2>
+      <ul class="lines"><li>${b.courses.length} courses, yours to keep</li><li>A final assessment and certificate for each</li><li>The free foundations course included</li></ul>
+      <div class="total"><span>One-off payment</span><b class="num">${money(b.price)}</b></div>
+      <p class="note" id="coNote">Secure card payment by Stripe. You'll come straight back to your courses.</p>
+      <div data-turnstile></div>
+      <div style="display:grid;gap:10px" id="coBtns"><button class="btn solid block" id="coPay">Pay ${money(b.price)}</button><button class="btn ghost block" id="coCancel">Not now</button></div></div>`;
+    document.body.appendChild(s);
+    const close = () => s.remove();
+    s.addEventListener('click', e => { if (e.target === s) close(); });
+    s.querySelector('#coCancel').addEventListener('click', close);
+    humanCheck(s.querySelector('[data-turnstile]'));
+    const pay = s.querySelector('#coPay');
+    pay.addEventListener('click', async () => {
+      pay.disabled = true; pay.textContent = 'Opening secure checkout…';
+      try {
+        const token = await humanToken(s);
+        const r = await api('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bundle: id, email: u.email, base: ROOT, 'cf-turnstile-response': token }) });
+        if (r.url) { location.href = r.url; return; }
+        s.querySelector('#coNote').textContent = `Card payments open in the next few days. We'll email ${u.email} as soon as you can buy.`;
+        s.querySelector('#coBtns').innerHTML = '<button class="btn solid block" id="coOk">OK</button>';
+        s.querySelector('#coOk').addEventListener('click', close);
+      } catch (err) { pay.disabled = false; pay.textContent = `Pay ${money(b.price)}`; humanReset(s); s.querySelector('#coNote').textContent = err.message; }
+    });
+    pay.focus();
+  }
+
   // After Stripe sends the buyer back: ?session_id=cs_... on the course page.
   async function confirmPayment(onDone) {
     const id = qs('session_id'); if (!id) return;
-    history.replaceState(null, '', location.pathname + '?c=' + encodeURIComponent(qs('c') || ''));
+    history.replaceState(null, '', location.pathname + (qs('c') ? '?c=' + encodeURIComponent(qs('c')) : ''));
     try {
       const r = await api('/api/confirm?session_id=' + encodeURIComponent(id));
-      Store.buy(r.course);
-      const c = (window.COURSES || []).find(x => x.id === r.course);
-      toast((c ? c.title : 'Course') + ' unlocked. Thanks for buying.');
+      Store.addPurchases(r.courses || [r.course]);
+      const c = (window.COURSES || []).find(x => x.id === r.course), b = (window.GAMBIT_BUNDLES || {})[r.course];
+      toast((b ? b.title : c ? c.title : 'Course') + ' unlocked. Thanks for buying.');
       onDone && onDone();
     } catch (err) { toast(err.message + ' If you were charged, email hello@gambitschool.com.'); }
   }
 
-  window.G = { safeNext, money, api, confirmPayment, register, humanToken, humanReset, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
+  window.G = { ROOT, checkoutBundle, safeNext, money, api, confirmPayment, register, humanToken, humanReset, drawPiece, paintIcons, Store, lessonsOf, playable, courseProgress, canOpen, qs, esc, toast, requireUser, header, checkout, initials };
 })();

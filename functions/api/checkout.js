@@ -1,8 +1,8 @@
-// POST /api/checkout  { course, email, base, cf-turnstile-response }
-// Starts a Stripe Checkout payment for one paid course and returns its URL.
+// POST /api/checkout  { course | bundle, email, base, cf-turnstile-response }
+// Starts a Stripe Checkout payment for one paid course or a track bundle and returns its URL.
 // Until STRIPE_SECRET_KEY is set, it records the buyer's interest instead and returns { pending: true }.
 import { cors, reply, validEmail, ALLOWED } from '../../lib/http.js';
-import { PAID, PRICE_PENCE } from '../../lib/catalogue.js';
+import { PAID, PRICE_PENCE, BUNDLES } from '../../lib/catalogue.js';
 import { checkHuman, isHoneypot } from '../../lib/turnstile.js';
 
 export const onRequestOptions = ({ request }) => new Response(null, { status: 204, headers: cors(request) });
@@ -11,8 +11,11 @@ export async function onRequestPost({ request, env }) {
   let d;
   try { d = await request.json(); } catch { return reply(request, 400, { error: 'Send course and email as JSON.' }); }
   if (isHoneypot(d)) return reply(request, 200, { pending: true });
-  const course = String(d.course || ''), email = String(d.email || '').trim().toLowerCase().slice(0, 254);
-  if (!PAID[course]) return reply(request, 400, { error: 'That course isn\'t for sale.' });
+  const bundle = BUNDLES[String(d.bundle || '')] ? String(d.bundle) : null;
+  const course = bundle || String(d.course || ''), email = String(d.email || '').trim().toLowerCase().slice(0, 254);
+  if (!bundle && !PAID[course]) return reply(request, 400, { error: 'That course isn\'t for sale.' });
+  const name = bundle ? 'Gambit ' + BUNDLES[bundle].title + ' (' + BUNDLES[bundle].courses.length + ' courses)' : 'Gambit course: ' + PAID[course];
+  const pence = bundle ? BUNDLES[bundle].pence : PRICE_PENCE;
   if (!validEmail(email)) return reply(request, 400, { error: 'Sign in again, then retry.' });
   const blocked = await checkHuman(request, env, d);
   if (blocked) return blocked;
@@ -32,12 +35,12 @@ export async function onRequestPost({ request, env }) {
     'customer_email': email,
     'line_items[0][quantity]': '1',
     'line_items[0][price_data][currency]': 'gbp',
-    'line_items[0][price_data][unit_amount]': String(PRICE_PENCE),
-    'line_items[0][price_data][product_data][name]': 'Gambit course: ' + PAID[course],
+    'line_items[0][price_data][unit_amount]': String(pence),
+    'line_items[0][price_data][product_data][name]': name,
     'metadata[course]': course,
     'metadata[email]': email,
-    'success_url': base + 'course.html?c=' + encodeURIComponent(course) + '&session_id={CHECKOUT_SESSION_ID}',
-    'cancel_url': base + 'course.html?c=' + encodeURIComponent(course)
+    'success_url': base + (bundle ? 'app.html?' : 'course.html?c=' + encodeURIComponent(course) + '&') + 'session_id={CHECKOUT_SESSION_ID}',
+    'cancel_url': base + (bundle ? 'app.html' : 'course.html?c=' + encodeURIComponent(course))
   });
   const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST', body: form,

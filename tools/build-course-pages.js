@@ -6,6 +6,8 @@ const fs = require('fs'), path = require('path'), vm = require('vm'), { execSync
 const ROOT = path.join(__dirname, '..'), OUT = process.argv[2] || path.join(ROOT, 'dist'), HOME_LASTMOD = process.argv[3] || new Date().toISOString().slice(0, 10);
 const SITE = 'https://gambitschool.com';
 const cfg = require('./course-pages.config.js');
+const TRACKS = require('./track-pages.config.js');
+const TRACK_ANCHOR = { procurement: 'procurement negotiation training', sales: 'sales negotiation training', students: 'game theory for students' };
 
 const sb = { window: {} }; vm.createContext(sb);
 for (const f of fs.readdirSync(path.join(ROOT, 'assets/courses')).filter(f => f.endsWith('.js'))) vm.runInContext(fs.readFileSync(path.join(ROOT, 'assets/courses', f), 'utf8'), sb);
@@ -128,7 +130,7 @@ function topbar(nextPath) {
 }
 
 // Swap sign-up buttons for "Open course" when the visitor is already signed in on this device.
-const SIGNED_IN = id => `<script src="/assets/core.js?v=8"></script>
+const SIGNED_IN = id => `<script src="/assets/core.js?v=9"></script>
 <script>
   G.paintIcons();
   if (G.Store.user) {
@@ -199,6 +201,7 @@ ${topbar('course.html?c=' + c.id)}
       <section class="block related" aria-labelledby="h-rel" style="border-bottom:0"><h2 id="h-rel">Related courses</h2>
         <p class="prose" style="font-size:16px">This course pairs well with ${inlineRel.slice(0, -1).join(', ')} and ${inlineRel[inlineRel.length - 1]}. New to game theory? The free <a class="inline" href="/courses/${cfg.courses.foundations.slug}">game theory foundations course</a> is the place to start${c.id === 'foundations' ? ', and you are on it' : ''}.</p>
         <div class="rel">${relLinks}</div>
+        ${(() => { const ts = TRACKS.filter(t => t.path.some(p => p.id === c.id)); return ts.length ? `<p class="prose" style="font-size:16px">Part of ${ts.map(t => `<a class="inline" href="/for/${t.slug}">${TRACK_ANCHOR[t.slug] || t.eyebrow}</a>`).join(' and ')}: take it with the related courses as a track and save.</p>` : ''; })()}
         <p style="font-size:14px"><a class="inline" href="/courses/">See all ${courses.length} courses</a></p></section>
     </div>
     <aside class="buy" aria-label="Enrol">
@@ -255,5 +258,6 @@ for (const c of courses) {
   urls.push([url(c), lm]);
 }
 urls.splice(1, 0, [SITE + '/courses/', hubMod]);
+urls.splice(1, 0, ...require('./build-track-pages.js')(OUT, courses, cfg, lastmod));
 fs.writeFileSync(path.join(OUT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls.map(([u, d]) => `  <url><loc>${u}</loc><lastmod>${d}</lastmod></url>`).join('\n') + '\n</urlset>\n');
 console.log(`Built ${courses.length} course pages, the hub and a sitemap with ${urls.length} URLs in ${OUT}`);

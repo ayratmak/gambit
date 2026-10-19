@@ -277,6 +277,15 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
   .matrix td { height: 70px; }
   .matrix td .pay { font-size: 22px; }
 }
+.for-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 14px; margin-top: 36px; }
+.for-card { display: grid; gap: 12px; align-content: start; padding: 26px; border: 1px solid var(--line-strong); border-radius: 16px; color: inherit; text-decoration: none; transition: border-color .2s, transform .3s; }
+.for-card:hover { border-color: var(--ink); transform: translateY(-3px); }
+.for-card.main { border: 2px solid var(--accent); background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 65%); }
+.for-card canvas { width: 40px; height: 40px; }
+.for-card h3 { font-size: 28px; letter-spacing: -.015em; }
+.for-card p { color: var(--muted); font-size: 15px; line-height: 1.5; }
+.for-card .go { font-size: 14px; color: var(--accent); }
+@media (max-width: 900px) { .for-grid { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   * { transition: none !important; }
@@ -285,6 +294,7 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
 
 <nav class="nav" aria-label="Main">
   <div class="pill left">
+    <a href="#for">Tracks</a>
     <a href="#tracks">Courses</a>
     <a href="#method">Method</a>
     <a href="#lesson">Sample lesson</a>
@@ -320,6 +330,16 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
       </div>
     </div>
   </header>
+
+  <section class="wrap" id="for" aria-labelledby="h-for">
+    <span class="mono eyebrow">Pick your track</span>
+    <h2 class="h2" id="h-for">Built for the job you do, or the one you want.</h2>
+    <div class="for-grid">
+      <a class="for-card main" href="/for/procurement"><canvas class="piece-icon" data-piece="rook" width="80" height="80" aria-hidden="true"></canvas><span class="mono">For procurement professionals · 6 courses · £39</span><h3>Procurement negotiation training</h3><p>Run tenders suppliers can't game, compare unequal suppliers on one True Price, and plan every big renegotiation.</p><span class="go">See the procurement track →</span></a>
+      <a class="for-card" href="/for/sales"><canvas class="piece-icon" data-piece="knight" width="80" height="80" aria-hidden="true"></canvas><span class="mono">For sales &amp; account managers · 5 courses · £34</span><h3>Sales negotiation training</h3><p>Anchor first, bid smart in tenders and stop giving away margin at the last minute.</p><span class="go">See the sales track →</span></a>
+      <a class="for-card" href="/for/students"><canvas class="piece-icon" data-piece="pawn" width="80" height="80" aria-hidden="true"></canvas><span class="mono">For students &amp; graduates · free + 4 courses · £24</span><h3>Game theory for students</h3><p>Certificates for your CV, stories for interviews and a head start on your first salary negotiation.</p><span class="go">See the student track →</span></a>
+    </div>
+  </section>
 
   <section class="wrap" id="why">
     <div class="split">

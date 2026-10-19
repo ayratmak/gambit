@@ -65,7 +65,7 @@
 </head>
 <body>
 <main class="wrap" id="main"></main>
-<script src="assets/core.js?v=8"></script>
+<script src="assets/core.js?v=9"></script>
 <script src="assets/courses/foundations.js?v=5"></script>
 <script src="assets/courses/strategy.js?v=5"></script>
 <script src="assets/courses/negotiation.js?v=5"></script>
@@ -75,6 +75,8 @@
 <script src="assets/courses/true-price.js?v=5"></script>
 <script src="assets/courses/auctions.js?v=5"></script>
 <script src="assets/courses/advanced-auctions.js?v=5"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="assets/bundles.js?v=1"></script>
 <script src="assets/data.js?v=5"></script>
 <script>
 (() => {
@@ -177,6 +179,8 @@
     </section>`;
   G.paintIcons();
   if (location.hash) { const t = document.querySelector(location.hash); t && t.scrollIntoView(); }
+  G.confirmPayment(() => setTimeout(() => location.reload(), 1200));
+  if (G.qs('bundle')) { const id = G.qs('bundle'); history.replaceState(null, '', location.pathname); G.checkoutBundle(id); }
 })();
 </script>
 </body>

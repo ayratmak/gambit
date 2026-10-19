@@ -2,7 +2,7 @@
 // Creates or refreshes a sign-up. Marketing consent is only ever switched on here, never off;
 // withdrawing it will go through an unsubscribe link.
 import { cors, reply, validEmail } from '../../lib/http.js';
-import { PAID } from '../../lib/catalogue.js';
+import { PAID, unlocks } from '../../lib/catalogue.js';
 import { checkHuman, isHoneypot } from '../../lib/turnstile.js';
 
 export async function onRequestOptions({ request }) {
@@ -38,7 +38,7 @@ export async function onRequestPost({ request, env }) {
   let purchases = [];
   try {
     const { results } = await env.DB.prepare('SELECT DISTINCT course FROM purchases WHERE email = ?1').bind(email).all();
-    purchases = (results || []).map(r => r.course);
+    purchases = [...new Set((results || []).flatMap(r => unlocks(r.course)))];
   } catch { /* purchases table not created yet: sign-up still succeeds */ }
   // Admin accounts (Pages secret ADMIN_EMAILS, comma-separated) get every paid course.
   const admins = String(env.ADMIN_EMAILS || '').toLowerCase().split(',').map(x => x.trim()).filter(Boolean);
