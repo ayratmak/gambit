@@ -76,6 +76,7 @@
 <script src="assets/courses/auctions.js?v=5"></script>
 <script src="assets/courses/advanced-auctions.js?v=5"></script>
 <script src="assets/data.js?v=5"></script>
+<script src="assets/worlds.js?v=1"></script>
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, courseProgress, canOpen } = G;
@@ -96,7 +97,9 @@
       ${m.lessons.map(l => {
         n++;
         const done = Store.isDone(course.id, l.id), open = canOpen(course, l), ready = playable(l);
-        const tag = !ready ? '<span class="badge">In production</span>' : (!owns && l.preview ? '<span class="badge free">Preview</span>' : '');
+        const w3 = (window.GAMBIT_WORLDS || {})[course.id];
+        const tag = (!ready ? '<span class="badge">In production</span>' : (!owns && l.preview ? '<span class="badge free">Preview</span>' : ''))
+          + (w3 && w3.lesson === l.id ? '<span class="badge owned">3D</span>' : '');
         const inner = `<span class="dot num">${done ? '✓' : n}</span>
           <span><span class="t">${esc(l.title)}</span><span class="sub"><span class="mono">${esc(l.kind)}</span><span class="mono num">${l.minutes} min</span></span></span>
           <span class="right">${tag}${!open && ready ? lockSvg : ''}</span>`;
@@ -121,11 +124,11 @@
       const first = lessonsOf(course).find(playable);
       side = course.free
         ? `<div class="price-big num">Free<small>certificate included</small></div>
-          <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li><li>Final assessment</li><li>Certificate of completion</li></ul>
+          <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li>${(window.GAMBIT_WORLDS || {})[course.id] ? '<li>A 3D lesson with Max and Libby</li>' : ''}<li>Final assessment</li><li>Certificate of completion</li></ul>
           <a class="btn solid block" href="${join('lesson.html?c=' + course.id + '&l=' + first.id)}">Sign up free and start</a>
           <p class="muted" style="font-size:13px">Just your name and email. No card needed.</p>`
         : `<div class="price-big num">${G.money(course.price)}<small>one-off</small></div>
-          <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li><li>Final assessment</li><li>Certificate of completion</li><li>Lifetime access</li></ul>
+          <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li>${(window.GAMBIT_WORLDS || {})[course.id] ? '<li>A 3D lesson with Max and Libby</li>' : ''}<li>Final assessment</li><li>Certificate of completion</li><li>Lifetime access</li></ul>
           <a class="btn solid block" href="${join('course.html?c=' + course.id + '&buy=1')}">Sign up and buy · ${G.money(course.price)}</a>
           ${pv ? `<a class="btn ghost block" href="${join('lesson.html?c=' + course.id + '&l=' + pv.id)}">Sign up free and try lesson one</a>` : ''}
           <p class="muted" style="font-size:13px">Signing up is free. You only pay when you buy the course.</p>`;
@@ -139,7 +142,7 @@
     } else if (course.status === 'live') {
       const pv = lessonsOf(course).find(l => l.preview);
       side = `<div class="price-big num">${G.money(course.price)}<small>one-off</small></div>
-        <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li><li>Final assessment</li><li>Certificate of completion</li><li>Lifetime access</li></ul>
+        <ul class="lines"><li>${lessonsOf(course).length} interactive lessons</li>${(window.GAMBIT_WORLDS || {})[course.id] ? '<li>A 3D lesson with Max and Libby</li>' : ''}<li>Final assessment</li><li>Certificate of completion</li><li>Lifetime access</li></ul>
         <button class="btn solid block" id="buyBtn">Buy course · ${G.money(course.price)}</button>
         ${pv ? `<a class="btn ghost block" href="lesson.html?c=${course.id}&l=${pv.id}">Try the free lesson</a>` : ''}`;
     } else {
@@ -162,7 +165,7 @@
           ${course.outcomes.length ? `<ul class="outcomes">${course.outcomes.map(o => `<li>${esc(o)}</li>`).join('')}</ul>` : ''}
           <div class="syllabus"><h2>What's inside</h2>${mods}${finale}</div>
         </div>
-        <aside class="buy">${side}</aside>
+        <aside class="buy">${side}${(() => { const w3 = (window.GAMBIT_WORLDS || {})[course.id]; return w3 ? `<a class="btn ghost block" href="world.html?w=${w3.world}">Play the 3D lesson free · ${esc(w3.title)}</a>` : ''; })()}</aside>
       </div>`;
     G.paintIcons();
     const b = document.getElementById('buyBtn');

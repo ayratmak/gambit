@@ -39,6 +39,7 @@
   --line: rgba(23, 21, 15, .16);
   --line-strong: rgba(23, 21, 15, .34);
   --accent: #2E5B45;
+  --raised: #ECEBE5; --bad: #9A3B2A;
   --pill: rgba(232, 231, 225, .72);
   --card-bg: #17150F;
   --card-fg: #E9E7DF;
@@ -52,7 +53,7 @@
   :root:not([data-theme="light"]) {
     --bg: #12120E; --surface: #1B1B16; --ink: #E7E4D9; --muted: #9B978A;
     --line: rgba(231, 228, 217, .14); --line-strong: rgba(231, 228, 217, .32);
-    --accent: #86B79A; --pill: rgba(30, 30, 24, .72);
+    --accent: #86B79A; --pill: rgba(30, 30, 24, .72); --raised: #23231D; --bad: #E0907E;
     --card-bg: #22221B; --card-fg: #E7E4D9; --card-muted: #9B978A;
     color-scheme: dark;
   }
@@ -60,7 +61,7 @@
 :root[data-theme="dark"] {
   --bg: #12120E; --surface: #1B1B16; --ink: #E7E4D9; --muted: #9B978A;
   --line: rgba(231, 228, 217, .14); --line-strong: rgba(231, 228, 217, .32);
-  --accent: #86B79A; --pill: rgba(30, 30, 24, .72);
+  --accent: #86B79A; --pill: rgba(30, 30, 24, .72); --raised: #23231D; --bad: #E0907E;
   --card-bg: #22221B; --card-fg: #E7E4D9; --card-muted: #9B978A;
   color-scheme: dark;
 }
@@ -290,13 +291,54 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
   html { scroll-behavior: auto; }
   * { transition: none !important; }
 }
+/* Meet Max and Libby */
+.hosts { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 26px; max-width: 460px; }
+.host { border: 1px dashed var(--line-strong); border-radius: 6px; padding: 16px 18px; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 4px 16px; align-items: center; }
+.host .face { width: 88px; height: 88px; border-radius: 50%; grid-row: span 3; background: var(--surface); border: 2px solid #3F7D5C; object-fit: cover; }
+.host .face { color: transparent; font-size: 0; }
+.host.libby .face { border-color: #D6A33E; }
+.host h3 { font-size: 26px; line-height: 1; }
+.host p { color: var(--muted); font-size: 14px; }
+.perks { display: grid; gap: 10px; margin: 6px 0 0; padding: 0; list-style: none; }
+.perks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; font: 350 18px/1.45 var(--font-display); }
+.perks li::before { content: "✓"; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: var(--bg); display: grid; place-items: center; font: 500 11px var(--font-ui); margin-top: 4px; }
+.meet-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+#meet .essay { display: grid; gap: 18px; }
+@media (max-width: 600px) { .hosts { grid-template-columns: 1fr; } }
+
+/* 3D stage in the sample game */
+.game3d { position: relative; height: clamp(250px, 30vw, 330px); border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: radial-gradient(120% 90% at 50% 25%, var(--surface), var(--bg) 75%); }
+.game3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.game3d .wlabels { position: absolute !important; inset: 0; z-index: 1 !important; touch-action: pan-y; pointer-events: none; }
+.game3d .hint3d { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font: 400 18px var(--font-display); }
+.wlabel { font: 500 10.5px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--pill); color: var(--ink); white-space: nowrap; pointer-events: none; }
+.wlabel.you { background: #3F7D5C; color: #F3F0E8; border-color: #3F7D5C; }
+.wlabel.them { background: #D6A33E; color: #17150F; border-color: #D6A33E; }
+.wlabel.sign { background: transparent; border-style: dashed; color: var(--muted); }
+.wlabel.stack { text-transform: none; letter-spacing: 0; font-size: 12px; }
+.wlabel.move.hold { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.wlabel.move.cut { background: var(--bad); color: var(--bg); border-color: var(--bad); }
+.wbubble { font: 400 14px/1.3 var(--font-display); background: var(--raised); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 12px; padding: 7px 11px; max-width: 220px; box-shadow: 0 8px 24px rgba(0, 0, 0, .12); pointer-events: none; position: relative; }
+.wbubble[hidden] { display: none; }
+.wbubble.say::after { content: ""; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -7px; width: 12px; height: 12px; background: var(--raised); border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); transform: translateX(-50%) rotate(45deg); }
+.wbubble.think { font-style: italic; border-style: dashed; }
+.wbubble.pop { animation: pop .45s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes pop { from { opacity: 0; scale: .7; } }
 </style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+
 
 <nav class="nav" aria-label="Main">
   <div class="pill left">
     <a href="#for">Tracks</a>
     <a href="#tracks">Courses</a>
     <a href="#method">Method</a>
+    <a href="#meet">3D lessons</a>
     <a href="#lesson">Sample lesson</a>
   </div>
   <a class="pill brand" href="#top" aria-label="Gambit home"><canvas class="piece-icon" data-piece="knight" width="48" height="48" aria-hidden="true"></canvas>Gambit</a>
@@ -312,10 +354,10 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
     <div class="hero-copy">
       <h1 class="kicker">Free game theory course, with a certificate</h1>
       <p class="display">See the whole <em>board.</em></p>
-      <p class="lede">Gambit is a free online game theory course for people who negotiate, buy and compete for a living. Lessons are led by practitioners, you play every game before you study it, and you earn a certificate when you pass.</p>
+      <p class="lede">Gambit is a free online game theory course for people who negotiate, buy and compete for a living. Every course has interactive 3D lessons hosted by Max and Libby: you play each game before you study it, click through the scene to see how it works, and earn a certificate when you pass.</p>
       <div class="cta-row">
         <a class="btn solid" href="#tracks">Browse courses</a>
-        <a class="btn bracket" href="#lesson">Play a sample lesson</a>
+        <a class="btn bracket" href="#meet">Meet Max and Libby</a>
       </div>
     </div>
     <div class="stage" id="stage">
@@ -330,6 +372,28 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
       </div>
     </div>
   </header>
+
+  <section class="wrap" id="meet" aria-labelledby="h-meet">
+    <div class="split">
+      <div>
+        <span class="mono eyebrow">Interactive 3D lessons</span>
+        <h2 class="h2" id="h-meet">Max grabs the biggest number. Libby asks where it all ends up.</h2>
+        <div class="hosts">
+          <div class="host max"><img class="face" data-portrait="max" alt="Max, a cartoon boy in a green hoodie" width="76" height="76"><span class="mono">Short for maximise</span><h3>Max</h3><p>Quick, competitive and first to fall for the trap, so you see exactly how it works.</p></div>
+          <div class="host libby"><img class="face" data-portrait="libby" alt="Libby, a cartoon girl with glasses and a mustard jacket" width="76" height="76"><span class="mono">Short for equilibrium</span><h3>Libby</h3><p>Calm, curious and a step ahead. She names the idea and shows why it holds.</p></div>
+        </div>
+      </div>
+      <div class="essay">
+        <p>Every Gambit course has a 3D lesson where Max and Libby act out the game. They play two robbers in separate rooms, rival cafés on one street, bidders at an auction, a buyer and a supplier at the tender table. You don't just read about the game. You walk around it.</p>
+        <ul class="perks">
+          <li>Click anything in the scene and it tells you what it knows: the deal, the evidence, each player's best move.</li>
+          <li>Make the call before you're told the answer, then watch Max and Libby live with it.</li>
+          <li>One 3D lesson in each of the nine courses, free to play before you buy.</li>
+        </ul>
+        <div class="meet-cta"><a class="btn solid" href="world.html?w=two-robbers">Play the two robbers in 3D</a><a class="btn bracket" href="#lesson">Or beat Max at a tender</a></div>
+      </div>
+    </div>
+  </section>
 
   <section class="wrap" id="for" aria-labelledby="h-for">
     <span class="mono eyebrow">Pick your track</span>
@@ -366,21 +430,22 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
       <div class="lesson-head">
         <span class="mono">Sample · Procurement, module 3</span>
         <h2 class="h2">Repeated tenders.</h2>
-        <p class="scenario">You and one rival supplier bid for the same contract every quarter. Hold your price, or undercut?</p>
-        <p>Eight quarters. Your rival follows a fixed strategy you'll see at the end. Payoffs are margin in £k per quarter.</p>
+        <p class="scenario">Libby runs the same tender every quarter, and you and Max both bid. Hold your price, or undercut?</p>
+        <p>Eight quarters. Max follows a fixed strategy you'll see at the end. Payoffs are margin in £k per quarter.</p>
       </div>
       <div class="game" aria-live="polite">
+        <div class="game3d" id="game3d" aria-hidden="true"><div class="hint3d" id="hint3d">Setting the table…</div></div>
         <div class="game-top">
           <div class="score">
             <div><span class="mono">You</span><b id="sYou">0</b></div>
-            <div><span class="mono">Rival</span><b id="sThem">0</b></div>
+            <div><span class="mono">Max</span><b id="sThem">0</b></div>
           </div>
           <span class="mono" id="qLabel">Quarter 1 of 8</span>
         </div>
         <div class="matrix-wrap">
           <table class="matrix">
             <thead>
-              <tr><th></th><th>Rival holds</th><th>Rival undercuts</th></tr>
+              <tr><th></th><th>Max holds</th><th>Max undercuts</th></tr>
             </thead>
             <tbody>
               <tr><th scope="row">You hold</th>
@@ -397,9 +462,9 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
           <button class="btn bracket" id="mCut">Undercut</button>
         </div>
         <div class="track" id="track" aria-label="Quarters played"></div>
-        <p class="debrief" id="debrief">In a single tender, undercutting is the dominant move: whatever your rival does, it pays you more. Does that still hold when you meet again next quarter?</p>
+        <p class="debrief" id="debrief">In a single tender, undercutting is the dominant move: whatever Max does, it pays you more. Does that still hold when you meet again next quarter?</p>
         <div class="game-foot">
-          <span class="mono">Your margin, rival margin</span>
+          <span class="mono">Your margin, Max's margin</span>
           <button class="link-btn" id="reset">Start again</button>
         </div>
       </div>
@@ -411,12 +476,12 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
       <div class="method-card">
         <span class="mono">The method</span>
         <h3>Play the game first. Learn its name after.</h3>
-        <p>Lectures explain equilibria. Gambit puts you inside one, against classmates and strategy bots, then shows you where it was.</p>
+        <p>Lectures explain equilibria. Gambit puts you inside one, in 3D lessons and live games against strategy bots, then shows you where it was.</p>
       </div>
       <div class="steps">
-        <div class="step"><span class="n">1</span><h4>Play</h4><p>Each concept opens as a live game: a sealed-bid auction, a supplier standoff, a three-way coalition split. You make real choices with a timer running.</p></div>
-        <div class="step"><span class="n">2</span><h4>Debrief</h4><p>A practitioner replays the cohort's moves, marks the equilibrium and explains why most of the room missed it.</p></div>
-        <div class="step"><span class="n">3</span><h4>Apply</h4><p>You map the game onto a live deal from your own work. Faculty review it and send back the move they'd make.</p></div>
+        <div class="step"><span class="n">1</span><h4>Play</h4><p>Each concept opens as something you do: a 3D scene with Max and Libby, a sealed-bid auction, a supplier standoff. You make the call before anyone tells you the answer.</p></div>
+        <div class="step"><span class="n">2</span><h4>Debrief</h4><p>Every answer gets instant feedback. Max and Libby replay what happened, mark the equilibrium and show why the tempting move backfired.</p></div>
+        <div class="step"><span class="n">3</span><h4>Apply</h4><p>You test the idea on scenarios from real buying and selling work, then prove it in the final assessment and earn your certificate.</p></div>
       </div>
     </div>
   </section>
@@ -431,55 +496,55 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
     </div>
     <div class="tracks">
       <a class="trk" href="/courses/game-theory-foundations">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="pawn" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">Free · 10 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="pawn" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">Free · 10 lessons · 3D</span></div>
         <h3>Think Three Moves Ahead</h3>
         <ul><li>Payoff matrices and Nash equilibrium</li><li>Game trees and backward induction</li><li>Repeated games and quiet collusion</li></ul>
         <span class="mono">Foundations · start here</span>
       </a>
       <a class="trk" href="/courses/strategic-thinking">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="queen" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="queen" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons · 3D</span></div>
         <h3>Changing the Game</h3>
         <ul><li>Commitment: tie your own hands</li><li>Credible and empty threats</li><li>Redesigning a game you&#39;re losing</li></ul>
         <span class="mono">Strategy · every direction</span>
       </a>
       <a class="trk" href="/courses/negotiation-bargaining-power">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="knight" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="knight" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons · 3D</span></div>
         <h3>Bargaining Power</h3>
         <ul><li>Growing the pie before you split it</li><li>BATNA, walk-away points and the ZOPA</li><li>Information, deadlines and focal points</li></ul>
         <span class="mono">Negotiation · never moves straight</span>
       </a>
       <a class="trk" href="/courses/negotiation-psychology">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="king" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="king" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons · 3D</span></div>
         <h3>The Psychology of the Deal</h3>
         <ul><li>Anchors, framing and decoys</li><li>Fairness and the ultimatum game</li><li>A tactics toolkit you can use on Monday</li></ul>
         <span class="mono">Negotiation · read the room</span>
       </a>
       <a class="trk" href="/courses/negotiation-preparation">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="knight" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="knight" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 9 lessons · 3D</span></div>
         <h3>From Facts to Game Plan</h3>
         <ul><li>Facts, Power, Plan, Play, Learn</li><li>Carrots, sticks and the lever check</li><li>A full negotiation, from brief to close</li></ul>
         <span class="mono">Negotiation · the practitioner&#39;s method</span>
       </a>
       <a class="trk" href="/courses/procurement-tender-design">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="rook" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="rook" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons · 3D</span></div>
         <h3>Designing a Winning Tender</h3>
         <ul><li>Race, Ruler, Rulebook</li><li>Decide first, then let suppliers bid</li><li>Holding the line on award day</li></ul>
         <span class="mono">Procurement · holds the line</span>
       </a>
       <a class="trk" href="/courses/supplier-evaluation-total-cost">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="rook" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="rook" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons · 3D</span></div>
         <h3>Apples and Pears: True Price</h3>
         <ul><li>Credits and charges for unequal suppliers</li><li>Whole-life cost in today&#39;s money</li><li>A change price list that stops cost creep</li></ul>
         <span class="mono">Procurement · like for like</span>
       </a>
       <a class="trk" href="/courses/auction-theory">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="bishop" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="bishop" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons · 3D</span></div>
         <h3>Auctions Decoded</h3>
         <ul><li>Four formats, and when each wins</li><li>Bid shading and truthful bidding</li><li>The winner&#39;s curse, played for real</li></ul>
         <span class="mono">Auctions · the long diagonal</span>
       </a>
       <a class="trk" href="/courses/advanced-auction-design">
-        <div class="trk-top"><canvas class="piece-icon" data-piece="bishop" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons</span></div>
+        <div class="trk-top"><canvas class="piece-icon" data-piece="bishop" width="92" height="92" aria-hidden="true"></canvas><span class="mono meta">£9.89 · 10 lessons · 3D</span></div>
         <h3>When the Textbook Breaks</h3>
         <ul><li>Reserve prices and strong favourites</li><li>Collusion and signalling in auctions</li><li>What a tender reveals for later</li></ul>
         <span class="mono">Auctions · advanced</span>
@@ -818,34 +883,58 @@ footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(
 
     const db = $('debrief');
     if (!hist.length) {
-      db.innerHTML = 'In a single tender, undercutting is the dominant move: whatever your rival does, it pays you more. Does that still hold when you meet again next quarter?';
+      db.innerHTML = 'In a single tender, undercutting is the dominant move: whatever Max does, it pays you more. Does that still hold when you meet again next quarter?';
     } else if (!over) {
-      const word = { HH: 'You both held. Healthy margins all round.', HU: 'Your rival undercut you and took the quarter.', UH: 'You undercut and took the whole contract.', UU: 'Price war. You both bid at cost.' }[last.y + last.t];
+      const word = { HH: 'You both held. Healthy margins all round.', HU: 'Max undercut you and took the quarter.', UH: 'You undercut Max and took the whole contract.', UU: 'Price war. You both bid at cost.' }[last.y + last.t];
       db.textContent = word;
     } else {
       const cuts = hist.filter(h => h.y === 'U').length;
       const lastU = hist[ROUNDS - 1].y === 'U', midCuts = cuts - (lastU ? 1 : 0);
-      let msg = '<strong>Your rival played tit-for-tat:</strong> hold in the first quarter, then copy your previous move. ';
+      let msg = '<strong>Max played tit-for-tat:</strong> hold in the first quarter, then copy your previous move. ';
       if (!cuts) msg += 'You held all eight quarters and earned 24. Repetition turned a game where undercutting dominates into one where holding pays.';
       else {
         msg += 'You earned ' + you + ', against 24 for holding every quarter. ';
-        if (midCuts) msg += you < 24 ? 'Each undercut bought one good quarter, then your rival matched you and the margin went to your client. ' : 'Your mid-game undercuts each won a quarter and lost the next, so they only broke even. ';
+        if (midCuts) msg += you < 24 ? 'Each undercut bought one good quarter, then Max matched you and the margin went to Libby. ' : 'Your mid-game undercuts each won a quarter and lost the next, so they only broke even. ';
         if (lastU) msg += 'Undercutting in the final quarter is the one move tit-for-tat can never punish. That end-game problem is why fixed-length contracts unravel, and it is module 4.';
       }
       db.innerHTML = msg;
     }
   }
+  const stage3d = () => window.GambitStage;
+  // lets the 3D table catch up if moves were made before it loaded
+  window.GambitGame = { totals() { let you = 0, max = 0; hist.forEach(h => { const p = PAY[h.y + h.t]; you += p[0]; max += p[1]; }); return { q: hist.length, you, max }; } };
   function play(move) {
     if (hist.length >= ROUNDS) return;
     const rival = hist.length ? hist[hist.length - 1].y : 'H';
     hist.push({ y: move, t: rival });
     render();
+    const S = stage3d(); if (!S) return;
+    let you = 0, them = 0; hist.forEach(h => { const p = PAY[h.y + h.t]; you += p[0]; them += p[1]; });
+    S.play(hist.length, move, rival, you, them);
+    if (hist.length >= ROUNDS) setTimeout(() => S.over(you >= 24 ? 'Max copied your last move every quarter. Holding all the way paid best.' : 'Max copied your last move every quarter. Holding all the way would have earned you 24.'), 2800);
   }
   $('mHold').addEventListener('click', () => play('H'));
   $('mCut').addEventListener('click', () => play('U'));
-  $('reset').addEventListener('click', () => { hist = []; render(); });
+  $('reset').addEventListener('click', () => { hist = []; render(); stage3d() && stage3d().reset(); });
   render();
 })();
+</script>
+<script type="module">
+  // Max and Libby load only when their sections come near the screen, so the hero stays fast
+  const host = document.getElementById('game3d'), faces = [...document.querySelectorAll('img[data-portrait]')];
+  let started = false;
+  const start = async () => {
+    if (started) return; started = true; io.disconnect();
+    try {
+      const { boot } = await import('./assets/world/landing.js?v=2');
+      boot({ host, portraits: faces });
+      document.getElementById('hint3d')?.remove();
+      const t = window.GambitGame && window.GambitGame.totals();
+      if (t && t.q) window.GambitStage.sync(t.q, t.you, t.max); else window.GambitStage && window.GambitStage.intro();
+    } catch (e) { const h = document.getElementById('hint3d'); if (h) h.textContent = 'The 3D table needs WebGL. The game below still works.'; }
+  };
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) start(); }, { rootMargin: '400px' });
+  [document.getElementById('meet'), host].forEach(el => el && io.observe(el));
 </script>
 
 </html>

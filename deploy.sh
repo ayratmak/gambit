@@ -3,10 +3,14 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 rm -rf dist && mkdir -p dist/assets
-cp index.html login.html app.html course.html lesson.html certificate.html privacy.html robots.txt site.webmanifest \
+cp index.html login.html app.html course.html lesson.html world.html certificate.html privacy.html robots.txt site.webmanifest \
    favicon.ico favicon.svg favicon-32.png apple-touch-icon.png icon-192.png icon-512.png og-image.png dist/
 cp assets/*.css assets/*.js dist/assets/
 mkdir -p dist/assets/courses && cp assets/courses/*.js dist/assets/courses/
+mkdir -p dist/assets/world && cp assets/world/*.js dist/assets/world/
+# 3D lessons: checked in Node, which needs three.js locally (the browser loads it from a CDN)
+[ -d node_modules/three ] || npm i --no-save --silent three@0.160.0
+node tools/validate-worlds.mjs > /dev/null || { echo "3D lesson validation failed: run node tools/validate-worlds.mjs"; exit 1; }
 node tools/gen-exam-keys.js > /dev/null
 node tools/validate-courses.js > /dev/null || { echo "Course validation failed: run node tools/validate-courses.js"; exit 1; }
 # lastmod for the sitemap: the date of the file's last commit

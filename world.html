@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>3D lesson · Gambit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/app.css?v=6">
+<style>
+  html, body { height: 100%; }
+  body { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100dvh; overflow: hidden; }
+  .ltop { background: var(--bg); border-bottom: 1px solid var(--line); z-index: 10; }
+  .ltop-in { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 16px; align-items: center; height: 64px; max-width: none; }
+  .x { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-strong); display: grid; place-items: center; color: var(--muted); }
+  .x:hover { color: var(--ink); background: var(--surface); }
+  .segs { display: flex; gap: 4px; }
+  .segs i { flex: 1; height: 5px; border-radius: 5px; background: var(--line); transition: background .4s; }
+  .segs i.on { background: var(--accent); }
+  .segs i.cur { background: var(--ink); }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 420px; min-height: 0; }
+  .scene { position: relative; min-height: 0; overflow: hidden; background: radial-gradient(120% 90% at 50% 30%, var(--surface), var(--bg) 70%); }
+  .scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+  .wlabels { position: absolute !important; inset: 0; touch-action: none; cursor: grab; z-index: 1 !important; }
+  .wlabels:active { cursor: grabbing; }
+
+  /* Labels floating in the world */
+  .wlabel { font: 500 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--pill); color: var(--ink); cursor: pointer; white-space: nowrap; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: background .2s, border-color .2s; }
+  .wlabel:hover { border-color: var(--ink); }
+  .wlabel.you { background: #3F7D5C; color: #F3F0E8; border-color: #3F7D5C; }
+  .wlabel.sign { background: transparent; border-style: dashed; color: var(--muted); }
+  .wlabel.axis { background: var(--raised); cursor: default; text-transform: none; letter-spacing: 0; font: 500 13px var(--font-ui); }
+  .wlabel.axis.row { transform: translateX(-50%); }
+  .wlabel.stack { padding: 2px 7px; font-size: 10.5px; text-transform: none; letter-spacing: 0; background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .wlabel.stack.you { background: #3F7D5C; border-color: #3F7D5C; color: #F3F0E8; }
+  .wlabel.stack.them { background: #D6A33E; border-color: #D6A33E; color: #17150F; }
+  .wlabel.player.them { background: #D6A33E; color: #17150F; border-color: #D6A33E; }
+  .wlabel.coin { font: 400 18px var(--font-display); width: 30px; height: 30px; padding: 0; display: grid; place-items: center; }
+  .wbubble { font: 400 15px/1.25 var(--font-display); background: var(--raised); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 12px; padding: 8px 12px; max-width: 200px; text-align: center; box-shadow: 0 8px 24px rgba(0, 0, 0, .12); pointer-events: none; }
+  .wbubble.pop { animation: pop .45s cubic-bezier(.2, 1.4, .4, 1); }
+  .wbubble b { color: var(--accent); font-weight: 550; }
+  .wbubble b.g { color: #3F7D5C; } .wbubble b.y { color: #B98A2C; }
+  .wbubble.say { position: relative; max-width: 230px; text-align: left; }
+  .wbubble.say::after { content: ""; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -7px; width: 12px; height: 12px; background: var(--raised); border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); transform: translateX(-50%) rotate(45deg); }
+  .wbubble.think { font-style: italic; border-style: dashed; background: color-mix(in srgb, var(--raised) 88%, transparent); }
+  @keyframes pop { from { opacity: 0; scale: .7; } }
+
+  /* State card */
+  .card { position: absolute; left: 16px; bottom: 16px; width: min(340px, calc(100% - 32px)); background: var(--card-bg); color: var(--card-fg); border-radius: 14px; padding: 18px 20px 20px; display: grid; gap: 10px; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); z-index: 6; animation: cardIn .35s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(12px); } }
+  .card .k { font: 500 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--card-muted); padding-right: 30px; }
+  .card h3 { font-size: 26px; line-height: 1.05; letter-spacing: -.01em; }
+  .card dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; padding: 10px 0; border-block: 1px solid rgba(233, 231, 223, .14); font-size: 14px; }
+  .card dt { color: var(--card-muted); }
+  .card dd { margin: 0; text-align: right; }
+  .card p { font-size: 14px; color: var(--card-fg); opacity: .88; }
+  .card .close { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(233, 231, 223, .22); background: none; color: var(--card-muted); cursor: pointer; }
+  .card .close:hover { color: var(--card-fg); }
+  .card.good { box-shadow: 0 0 0 2px var(--accent), 0 20px 50px rgba(0, 0, 0, .25); }
+
+  .tip { position: absolute; left: 50%; top: 14px; translate: -50% 0; font: 500 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--pill); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; pointer-events: none; transition: opacity .6s; white-space: nowrap; z-index: 6; }
+  .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font: 400 20px var(--font-display); }
+
+  /* Guide panel */
+  .guide { border-left: 1px solid var(--line); background: var(--bg); display: grid; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; }
+  .gbody { overflow-y: auto; padding: 28px 28px 20px; display: grid; gap: 18px; align-content: start; }
+  .gbody h2 { font-size: clamp(30px, 3vw, 38px); line-height: 1.04; letter-spacing: -.02em; animation: rise .45s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  .gbody .txt { display: grid; gap: 12px; }
+  .gbody .txt p { font: 350 18px/1.5 var(--font-display); }
+  .gbody .txt b { font-weight: 550; }
+  .gbody .txt b.g { color: var(--accent); }
+  .gbody .txt b.y { color: var(--gold); }
+  .lines b.g { color: #3F7D5C; } .lines b.y { color: #B98A2C; }
+  :root { --gold: #B08A3E; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --gold: #C9A55A; } }
+  .lines { display: grid; gap: 12px; }
+  .line { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; opacity: .28; transition: opacity .4s, transform .4s; transform: translateY(4px); }
+  .line.on { opacity: 1; transform: none; }
+  .line img { width: 52px; height: 52px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line-strong); object-fit: cover; }
+  .line.max img { border-color: #3F7D5C; } .line.libby img { border-color: #D6A33E; }
+  .line .who { font: 500 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .line p { font: 350 18px/1.45 var(--font-display); }
+  .line p b { font-weight: 550; }
+  .task { border: 1.5px dashed var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; font-size: 15px; }
+  .task .mono { color: var(--accent); }
+  .task.done { border-style: solid; }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px; }
+  .checks span { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--muted); }
+  .checks span.on { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .q { font: 400 22px/1.25 var(--font-display); }
+  .opts { display: grid; gap: 8px; }
+  .opt { text-align: left; padding: 13px 15px; border-radius: 10px; border: 1.5px solid var(--line-strong); background: var(--surface); cursor: pointer; font-size: 15px; transition: border-color .2s, background .2s; }
+  .opt:hover:not(:disabled) { border-color: var(--ink); }
+  .opt.good { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.bad { border-color: var(--bad); background: var(--bad-soft); }
+  .opt:disabled { cursor: default; }
+  .things { display: grid; gap: 8px; padding-top: 6px; border-top: 1px dashed var(--line-strong); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { font-size: 13px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); cursor: pointer; }
+  .chips button:hover { border-color: var(--ink); }
+  .chips button.seen { color: var(--muted); }
+  .sum { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+  .sum li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; font: 350 18px/1.45 var(--font-display); }
+  .sum li::before { content: "✓"; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--bg); display: grid; place-items: center; font: 500 12px var(--font-ui); margin-top: 3px; }
+  .gfoot { border-top: 1px solid var(--line); padding: 14px 28px calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: space-between; gap: 12px; align-items: center; transition: background .3s; }
+  .gfoot.good { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); }
+  .gfoot.bad { background: color-mix(in srgb, var(--bad) 10%, var(--bg)); }
+  .fb { font-size: 14px; min-width: 0; }
+  .fb strong { display: block; font-size: 15px; }
+  .gfoot.good .fb strong { color: var(--accent); }
+  .gfoot.bad .fb strong { color: var(--bad); }
+  .gfoot .btn { min-width: 130px; }
+
+  .show-sm { display: none; }
+  @media (max-width: 640px) { .tip .hide-sm { display: none; } .tip .show-sm { display: inline; } }
+  @media (max-width: 900px) {
+    body { overflow: auto; height: auto; min-height: 100dvh; grid-template-rows: auto auto; }
+    .layout { grid-template-columns: 1fr; }
+    .scene { height: 56vh; min-height: 340px; }
+    .guide { border-left: 0; border-top: 1px solid var(--line); }
+    .gbody { overflow: visible; padding: 22px var(--gutter) 16px; }
+    .gfoot { position: sticky; bottom: 0; background: var(--bg); padding-inline: var(--gutter); }
+    .card { left: 10px; bottom: 10px; width: calc(100% - 20px); max-height: 52%; overflow-y: auto; padding: 12px 14px 14px; gap: 6px; }
+    .card h3 { font-size: 20px; }
+    .card dl { font-size: 13px; gap: 3px 12px; padding: 6px 0; }
+    .card p { font-size: 13px; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<header class="ltop"><div class="wrap ltop-in">
+  <a class="x" id="close" href="course.html?c=foundations" aria-label="Leave lesson">✕</a>
+  <div class="segs" id="segs" aria-hidden="true"></div>
+  <span class="mono num" id="count"></span>
+</div></header>
+<div class="layout">
+  <section class="scene" id="scene" aria-label="Interactive 3D scene">
+    <div class="loading" id="loading">Building the world…</div>
+    <div class="tip" id="tip"><span class="hide-sm">Drag to turn · Scroll or pinch to zoom · Click anything</span><span class="show-sm">Drag to turn · Tap anything</span></div>
+    <article class="card" id="card" hidden aria-live="polite"></article>
+  </section>
+  <aside class="guide">
+    <div class="gbody" id="gbody"></div>
+    <div class="gfoot" id="foot"><div class="fb" id="fb"></div><button class="btn solid" id="next" disabled>Continue</button></div>
+  </aside>
+</div>
+
+<script type="module">
+  import { createWorld } from './assets/world/engine.js';
+  import { CAST, portrait } from './assets/world/characters.js';
+
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const wid = new URLSearchParams(location.search).get('w') || 'two-robbers';
+  const $ = id => document.getElementById(id);
+  const sceneEl = $('scene'), cardEl = $('card'), gbody = $('gbody'), foot = $('foot'), fb = $('fb'), next = $('next');
+
+  let mod, w, api;
+  try {
+    if (!/^[a-z-]+$/.test(wid)) throw new Error('bad id');
+    mod = await import(`./assets/world/${wid}.js`);
+    w = createWorld({ canvasHost: sceneEl, labelHost: sceneEl });
+    api = mod.build(w);
+  } catch (e) {
+    console.error(e);
+    const back = mod && mod.meta ? `lesson.html?c=${mod.meta.course}&l=${mod.meta.lesson}` : 'courses/';
+    $('loading').innerHTML = `<div style="text-align:center;display:grid;gap:12px;padding:20px">This 3D lesson couldn't load on this device.<a class="btn solid" href="${back}">Take the text version</a></div>`;
+    throw e;
+  }
+  $('loading').remove();
+  setTimeout(() => { $('tip').style.opacity = 0; }, 6000);
+
+  const { steps, card, meta } = mod;
+  const faces = {};
+  for (const k of Object.keys(CAST)) { try { faces[k] = portrait(CAST[k]); } catch (e) { faces[k] = ''; } }
+  document.title = meta.title + ' · 3D lesson · Gambit';
+  $('close').href = `course.html?c=${meta.course}`;
+  const lessonUrl = `lesson.html?c=${meta.course}&l=${meta.lesson}`;
+
+  let i = 0, done = false, clicked = new Set(), seen = new Set(), openKey = null;
+  const ctx = () => ({ api, stepId: steps[i].id, reached: id => steps.findIndex(s => s.id === id) <= i });
+
+  /* ---------- State card ---------- */
+  function openCard(key, tone) {
+    const c = card(key, ctx());
+    openKey = key; seen.add(key);
+    cardEl.className = 'card' + (tone ? ' ' + tone : '');
+    cardEl.innerHTML = `<button class="close" aria-label="Close card">✕</button>
+      <span class="k">${esc(c.kicker)}</span><h3>${esc(c.title)}</h3>
+      ${c.rows.length ? `<dl>${c.rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl>` : ''}
+      ${c.text ? `<p>${esc(c.text)}</p>` : ''}`;
+    cardEl.hidden = false;
+    cardEl.querySelector('.close').onclick = () => { cardEl.hidden = true; openKey = null; };
+    renderThings();
+  }
+  const refreshCard = () => { if (openKey && !cardEl.hidden) openCard(openKey); };
+
+  /* ---------- Feedback bar ---------- */
+  function feedback(state, title, text) {
+    foot.className = 'gfoot' + (state ? ' ' + state : '');
+    fb.innerHTML = title ? `<strong>${esc(title)}</strong>${text ? esc(text) : ''}` : '';
+  }
+
+  async function complete(msg) {
+    done = true; next.disabled = false; w.hint([]);
+    feedback('good', msg ? 'Right.' : 'Nice.', msg ? msg.replace(/^Right\.\s*/, '') : 'Continue when you\'re ready.');
+    const t = gbody.querySelector('.task'); t && t.classList.add('done');
+    const s = steps[i];
+    if (s.done) await s.done(api);
+    refreshCard();
+  }
+
+  /* ---------- Clicking things in the world ---------- */
+  function handlePick(key) {
+    const s = steps[i], task = s.task;
+    if (!task || done) return openCard(key);
+    if (task.click) {
+      openCard(key);
+      if (task.click.includes(key) && !clicked.has(key)) {
+        clicked.add(key); renderChecks();
+        const all = task.all ? task.click.every(k => clicked.has(k)) : true;
+        w.hint(task.all ? task.click.filter(k => !clicked.has(k)) : []);
+        if (all) complete();
+      }
+      return;
+    }
+    if (task.pick) {
+      if (key === task.pick.answer) { openCard(key, 'good'); return complete(task.pick.why); }
+      openCard(key);
+      if (task.pick.wrong[key]) feedback('bad', 'Not this one.', task.pick.wrong[key]);
+      return;
+    }
+    openCard(key);
+  }
+  w.onPick = handlePick;
+
+  /* ---------- Guide panel ---------- */
+  const NAMES = k => card(k, ctx()).title;
+  function renderChecks() {
+    const el = gbody.querySelector('.checks'), task = steps[i].task;
+    if (!el || !task || !task.click || !task.all) return;
+    el.innerHTML = task.click.map(k => `<span class="${clicked.has(k) ? 'on' : ''}">${esc(NAMES(k))}</span>`).join('');
+  }
+  function renderThings() {
+    const el = gbody.querySelector('.chips'); if (!el) return;
+    const keys = [...w.things.keys()].filter(k => w.shown(w.things.get(k).group) && w.things.get(k).group.userData.chip !== false && k !== 'deal-b');
+    el.innerHTML = keys.map(k => `<button data-k="${k}" class="${seen.has(k) ? 'seen' : ''}">${esc(NAMES(k))}</button>`).join('');
+    el.querySelectorAll('button').forEach(b => b.onclick = () => {
+      const k = b.dataset.k; w.glow(k, .3); setTimeout(() => w.glow(k, 0), 800); handlePick(k);
+    });
+  }
+
+  function segs() {
+    $('segs').innerHTML = steps.map((_, k) => `<i class="${k < i ? 'on' : k === i ? 'cur' : ''}"></i>`).join('');
+    $('count').textContent = `${i + 1} / ${steps.length}`;
+  }
+
+  let goRun = 0;
+  async function go(k) {
+    const run = ++goRun;
+    i = k; done = false; clicked = new Set();
+    const s = steps[i];
+    cardEl.hidden = true; openKey = null;
+    segs(); feedback('', '');
+    const task = s.task;
+    gbody.innerHTML = `
+      <span class="mono">3D lesson · ${esc(meta.title)}</span>
+      <h2>${esc(s.title)}</h2>
+      ${s.body ? `<div class="txt">${s.body.map(p => `<p>${p}</p>`).join('')}</div>` : ''}
+      ${s.lines ? `<div class="lines">${s.lines.map((l, n) => `<div class="line ${l.who}" data-n="${n}"><img src="${faces[l.who] || ''}" alt=""><div><span class="who">${esc(CAST[l.who].name)}</span><p>${l.text}</p></div></div>`).join('')}</div>` : ''}
+      ${s.summary ? `<ul class="sum">${s.summary.map(p => `<li><span>${p}</span></li>`).join('')}</ul>` : ''}
+      ${task && (task.click || task.pick) ? `<div class="task"><span class="mono">Your move</span><span>${esc(task.say || task.pick.say)}</span>${task.all ? '<div class="checks"></div>' : ''}</div>` : ''}
+      ${task && task.choice ? `<div class="task"><span class="mono">Your move</span><span class="q">${esc(task.choice.q)}</span><div class="opts">${task.choice.options.map((o, n) => `<button class="opt" data-n="${n}">${esc(o.text)}</button>`).join('')}</div></div>` : ''}
+      ${s.summary ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn solid" href="${lessonUrl}">Back to the lesson</a><button class="btn ghost" id="replay">Play again</button></div>` : ''}
+      <div class="things"><span class="mono">In this scene · click to inspect</span><div class="chips"></div></div>`;
+    renderChecks();
+    gbody.scrollTop = 0;
+    if (task && task.choice) gbody.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      const o = task.choice.options[+b.dataset.n];
+      if (o.ok) {
+        gbody.querySelectorAll('.opt').forEach(x => x.disabled = true); b.classList.add('good');
+        complete(o.why);
+      } else { b.classList.add('bad'); b.disabled = true; feedback('bad', 'Not quite.', o.why); }
+    });
+    const rp = $('replay'); if (rp) rp.onclick = () => location.reload();
+    next.textContent = i === steps.length - 1 ? 'Finish' : 'Continue';
+    next.disabled = true;
+    w.hint([]);
+    renderThings();
+    playLines(s.lines || []);
+    const cam = sceneEl.clientWidth / sceneEl.clientHeight < 1 ? s.cam.phone : s.cam.wide;
+    await Promise.all([w.look(...cam), s.enter ? s.enter(api) : null]);
+    if (run !== goRun) return; // the learner has already moved on
+    renderThings();
+    if (!task) { done = true; next.disabled = false; }
+    else if (task.click && !done) w.hint(task.click.filter(k => !clicked.has(k)));
+  }
+
+  /* ---------- Max and Libby talk the step through, one line at a time ---------- */
+  let talkRun = 0;
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  async function playLines(lines) {
+    const run = ++talkRun;
+    await wait(500);
+    for (let n = 0; n < lines.length; n++) {
+      if (run !== talkRun) return;
+      const l = lines[n], plain = l.text.replace(/<[^>]+>/g, '');
+      const ms = Math.max(1800, Math.min(5200, plain.length * 48));
+      const row = gbody.querySelector(`.line[data-n="${n}"]`); row && row.classList.add('on');
+      api.say && api.say(l.who, l.text, ms);
+      await wait(ms + 350);
+    }
+    if (run === talkRun) { await wait(1200); if (run === talkRun && api.quiet) api.quiet(); }
+  }
+  // Clicking the transcript skips ahead: show every line at once
+  gbody.addEventListener('click', e => { if (e.target.closest('.lines')) gbody.querySelectorAll('.line').forEach(r => r.classList.add('on')); });
+
+  next.onclick = () => {
+    if (next.disabled) return;
+    if (i === steps.length - 1) { location.href = lessonUrl; return; }
+    go(i + 1);
+  };
+  addEventListener('keydown', e => { if (e.key === 'Enter' && !next.disabled && !e.target.closest('button, a')) next.click(); });
+  go(Math.max(0, Math.min(steps.length - 1, (+new URLSearchParams(location.search).get('step') || 1) - 1)));
+</script>
+</body>
+</html>
