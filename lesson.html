@@ -163,11 +163,6 @@
   .tile b { font: 400 30px/1 var(--font-display); }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
-  .world-cta { display: grid; gap: 4px; padding: 16px 18px; margin-bottom: 26px; border-radius: 12px; border: 1.5px solid var(--accent); background: var(--accent-soft); grid-template-columns: minmax(0, 1fr) auto; }
-  .world-cta > * { grid-column: 1; }
-  .world-cta b { font: 400 22px var(--font-display); }
-  .world-cta .go { grid-column: 2; grid-row: 1 / span 3; align-self: center; font-weight: 500; color: var(--accent); }
-  .world-cta:hover { background: color-mix(in srgb, var(--accent) 18%, var(--bg)); }
   @media (max-width: 560px) { .world-cta { grid-template-columns: 1fr; } .world-cta .go { grid-column: 1; grid-row: auto; } }
   .lfoot { position: sticky; bottom: 0; background: var(--bg); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); transition: background .3s; }
   .lfoot.good { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); }
@@ -214,7 +209,7 @@
 <script src="assets/courses/auctions.js?v=5"></script>
 <script src="assets/courses/advanced-auctions.js?v=5"></script>
 <script src="assets/data.js?v=5"></script>
-<script src="assets/worlds.js?v=1"></script>
+<script src="assets/worlds.js?v=2"></script>
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, canOpen } = G;
@@ -232,6 +227,8 @@
   if (!course || (!examMode && (!lesson || !playable(lesson)))) { stage.innerHTML = `<h2>We couldn't find that lesson.</h2><p><a class="btn ghost" href="${back}">Back</a></p>`; foot.hidden = true; return; }
   if (examMode && (!Store.owns(course.id) || !course.exam)) { location.replace(back); return; }
   if (!examMode && !canOpen(course, lesson)) { location.replace(back + '&buy=1'); return; }
+  // A 3D lesson plays on its own page
+  if (!examMode && lesson.world) { location.replace('world.html?w=' + lesson.world); return; }
 
   const steps = examMode ? course.exam.questions.map(q => ({ t: 'exam', ...q })) : lesson.steps;
   document.title = (examMode ? 'Final assessment' : lesson.title) + ' · Gambit';
@@ -649,12 +646,6 @@
     document.getElementById('count').textContent = `${i + 1} / ${steps.length}`;
     const el = document.createElement('section'); el.className = 'step';
     stage.innerHTML = '';
-    const w3 = !examMode && i === 0 && (window.GAMBIT_WORLDS || {})[course.id];
-    if (w3 && w3.lesson === lesson.id) {
-      const b = document.createElement('a'); b.className = 'world-cta'; b.href = `world.html?w=${w3.world}`;
-      b.innerHTML = `<span class="mono">New · 3D lesson</span><b>Play this lesson in 3D with Max and Libby</b><span class="muted">${esc(w3.title)} · about 7 minutes · click anything in the scene</span><span class="go">Play in 3D →</span>`;
-      stage.appendChild(b);
-    }
     stage.appendChild(el);
     R[s.t](s, el);
     window.scrollTo({ top: 0 });
@@ -712,7 +703,7 @@
           <div class="actions"><a class="btn solid" href="login.html?next=${encodeURIComponent(target)}">${course.free ? 'Sign up free and continue' : 'Sign up to unlock the course'}</a><a class="btn ghost" href="course.html?c=${course.id}">Course overview</a></div>`;
         stage.innerHTML = ''; stage.appendChild(el); G.paintIcons(el); return;
       }
-      if (nxt && canOpen(course, nxt)) actions = `<a class="btn solid" href="lesson.html?c=${course.id}&l=${nxt.id}">Next: ${esc(nxt.title)}</a>`;
+      if (nxt && canOpen(course, nxt)) actions = `<a class="btn solid" href="lesson.html?c=${course.id}&l=${nxt.id}">Next: ${nxt.world ? '3D lesson · ' : ''}${esc(nxt.title)}</a>`;
       else if (!owns && course.status === 'live') actions = `<button class="btn solid" id="unlock">Unlock the full course · ${G.money(course.price)}</button>`;
       else if (owns && allDone && course.exam) actions = `<a class="btn accent" href="lesson.html?c=${course.id}&exam=1">Take the final assessment</a>`;
       else actions = '';

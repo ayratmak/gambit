@@ -158,6 +158,18 @@
   </aside>
 </div>
 
+<script src="assets/core.js?v=10"></script>
+<script src="assets/courses/foundations.js?v=5"></script>
+<script src="assets/courses/strategy.js?v=5"></script>
+<script src="assets/courses/negotiation.js?v=5"></script>
+<script src="assets/courses/psychology.js?v=5"></script>
+<script src="assets/courses/game-plan.js?v=5"></script>
+<script src="assets/courses/procurement.js?v=5"></script>
+<script src="assets/courses/true-price.js?v=5"></script>
+<script src="assets/courses/auctions.js?v=5"></script>
+<script src="assets/courses/advanced-auctions.js?v=5"></script>
+<script src="assets/data.js?v=5"></script>
+<script src="assets/worlds.js?v=2"></script>
 <script type="module">
   import { createWorld } from './assets/world/engine.js';
   import { CAST, portrait } from './assets/world/characters.js';
@@ -166,6 +178,14 @@
   const wid = new URLSearchParams(location.search).get('w') || 'two-robbers';
   const $ = id => document.getElementById(id);
   const sceneEl = $('scene'), cardEl = $('card'), gbody = $('gbody'), foot = $('foot'), fb = $('fb'), next = $('next');
+
+  // Who may play: the free course's 3D lesson is open to everyone; the others come with the course
+  const G = window.G, course = (window.COURSES || []).find(c => (window.GAMBIT_WORLDS[c.id] || {}).world === wid);
+  const lesson3d = course && G.lessonsOf(course).find(l => l.world === wid);
+  if (course && lesson3d) {
+    if (!G.Store.user && !lesson3d.preview) { G.requireUser(); throw new Error('sign in first'); }
+    if (!G.canOpen(course, lesson3d)) { location.replace(`course.html?c=${course.id}&buy=1`); throw new Error('not owned'); }
+  }
 
   let mod, w, api;
   try {
@@ -188,6 +208,14 @@
   document.title = meta.title + ' · 3D lesson · Gambit';
   $('close').href = `course.html?c=${meta.course}`;
   const lessonUrl = `lesson.html?c=${meta.course}&l=${meta.lesson}`;
+  // Where to go after the last step: the next lesson in the course (or sign up first, for a visitor)
+  const after = (() => {
+    if (!course || !lesson3d) return { href: lessonUrl, label: 'Back to the lesson' };
+    const ls = G.lessonsOf(course).filter(G.playable), nxt = ls[ls.indexOf(lesson3d) + 1];
+    if (!G.Store.user) return { href: 'login.html?next=' + encodeURIComponent(nxt ? `lesson.html?c=${course.id}&l=${nxt.id}` : `course.html?c=${course.id}`), label: 'Sign up free and continue' };
+    if (nxt && G.canOpen(course, nxt)) return { href: `lesson.html?c=${course.id}&l=${nxt.id}`, label: 'Next: ' + nxt.title };
+    return { href: `course.html?c=${course.id}`, label: 'Course overview' };
+  })();
 
   let i = 0, done = false, clicked = new Set(), seen = new Set(), openKey = null;
   const ctx = () => ({ api, stepId: steps[i].id, reached: id => steps.findIndex(s => s.id === id) <= i });
@@ -271,6 +299,7 @@
   async function go(k) {
     const run = ++goRun;
     i = k; done = false; clicked = new Set();
+    if (k === steps.length - 1 && course && lesson3d) G.Store.complete(course.id, lesson3d.id);
     const s = steps[i];
     cardEl.hidden = true; openKey = null;
     segs(); feedback('', '');
@@ -283,7 +312,7 @@
       ${s.summary ? `<ul class="sum">${s.summary.map(p => `<li><span>${p}</span></li>`).join('')}</ul>` : ''}
       ${task && (task.click || task.pick) ? `<div class="task"><span class="mono">Your move</span><span>${esc(task.say || task.pick.say)}</span>${task.all ? '<div class="checks"></div>' : ''}</div>` : ''}
       ${task && task.choice ? `<div class="task"><span class="mono">Your move</span><span class="q">${esc(task.choice.q)}</span><div class="opts">${task.choice.options.map((o, n) => `<button class="opt" data-n="${n}">${esc(o.text)}</button>`).join('')}</div></div>` : ''}
-      ${s.summary ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn solid" href="${lessonUrl}">Back to the lesson</a><button class="btn ghost" id="replay">Play again</button></div>` : ''}
+      ${s.summary ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn solid" href="${after.href}">${esc(after.label)}</a><button class="btn ghost" id="replay">Play again</button></div>` : ''}
       <div class="things"><span class="mono">In this scene · click to inspect</span><div class="chips"></div></div>`;
     renderChecks();
     gbody.scrollTop = 0;
@@ -329,7 +358,7 @@
 
   next.onclick = () => {
     if (next.disabled) return;
-    if (i === steps.length - 1) { location.href = lessonUrl; return; }
+    if (i === steps.length - 1) { location.href = after.href; return; }
     go(i + 1);
   };
   addEventListener('keydown', e => { if (e.key === 'Enter' && !next.disabled && !e.target.closest('button, a')) next.click(); });

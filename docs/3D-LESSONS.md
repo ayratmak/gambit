@@ -2,7 +2,9 @@
 
 A 3D lesson is a guided, clickable diorama hosted by Max and Libby (see `docs/CHARACTERS.md`). It runs at
 `world.html?w=<world-id>`, and `?step=N` jumps to a step while you're working on it. Each course has one, built on its
-free preview lesson, so anyone can play it.
+free preview lesson. `assets/worlds.js` adds it to the course as a lesson of its own (id `3d-<world-id>`), straight
+after that lesson, so learners reach it in order and it counts towards completion. Only the free foundations course's 3D
+lesson is open to everyone; the others need the course, and world.html sends anyone else to sign up or buy.
 
 The reference lesson is `assets/world/two-robbers.js`. Read it first.
 

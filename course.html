@@ -50,6 +50,8 @@
     position: sticky; top: calc(env(safe-area-inset-top, 0px) + 88px);
     border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); padding: 26px; display: grid; gap: 18px;
   }
+  .buy > * { min-width: 0; }
+  .buy .btn.block { white-space: normal; text-align: center; line-height: 1.3; }
   .buy .price-big { font: 400 54px/1 var(--font-display); letter-spacing: -.03em; }
   .buy .price-big small { font: 400 14px var(--font-ui); color: var(--muted); letter-spacing: 0; margin-left: 6px; }
   .ring { display: flex; align-items: center; gap: 16px; }
@@ -76,7 +78,7 @@
 <script src="assets/courses/auctions.js?v=5"></script>
 <script src="assets/courses/advanced-auctions.js?v=5"></script>
 <script src="assets/data.js?v=5"></script>
-<script src="assets/worlds.js?v=1"></script>
+<script src="assets/worlds.js?v=2"></script>
 <script>
 (() => {
   const { Store, esc, lessonsOf, playable, courseProgress, canOpen } = G;
@@ -97,9 +99,8 @@
       ${m.lessons.map(l => {
         n++;
         const done = Store.isDone(course.id, l.id), open = canOpen(course, l), ready = playable(l);
-        const w3 = (window.GAMBIT_WORLDS || {})[course.id];
-        const tag = (!ready ? '<span class="badge">In production</span>' : (!owns && l.preview ? '<span class="badge free">Preview</span>' : ''))
-          + (w3 && w3.lesson === l.id ? '<span class="badge owned">3D</span>' : '');
+        const tag = (l.world ? '<span class="badge owned">3D</span>' : '')
+          + (!ready ? '<span class="badge">In production</span>' : (!owns && l.preview ? '<span class="badge free">Preview</span>' : ''));
         const inner = `<span class="dot num">${done ? '✓' : n}</span>
           <span><span class="t">${esc(l.title)}</span><span class="sub"><span class="mono">${esc(l.kind)}</span><span class="mono num">${l.minutes} min</span></span></span>
           <span class="right">${tag}${!open && ready ? lockSvg : ''}</span>`;
@@ -165,7 +166,7 @@
           ${course.outcomes.length ? `<ul class="outcomes">${course.outcomes.map(o => `<li>${esc(o)}</li>`).join('')}</ul>` : ''}
           <div class="syllabus"><h2>What's inside</h2>${mods}${finale}</div>
         </div>
-        <aside class="buy">${side}${(() => { const w3 = (window.GAMBIT_WORLDS || {})[course.id]; return w3 ? `<a class="btn ghost block" href="world.html?w=${w3.world}">Play the 3D lesson free · ${esc(w3.title)}</a>` : ''; })()}</aside>
+        <aside class="buy">${side}${(() => { const w3 = (window.GAMBIT_WORLDS || {})[course.id]; return w3 && course.free ? `<a class="btn ghost block" href="world.html?w=${w3.world}">Play the 3D lesson · ${esc(w3.title)}</a>` : ''; })()}</aside>
       </div>`;
     G.paintIcons();
     const b = document.getElementById('buyBtn');
