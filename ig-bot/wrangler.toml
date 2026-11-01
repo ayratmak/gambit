@@ -1,0 +1,32 @@
+# Comment-to-DM bot and Reel scheduler for @hayekyeah (Instagram) and its Facebook Page.
+# Comment GAME THEORY on a post, get the free guide (gambitschool.com/free) by DM.
+# Deploy: cd ig-bot && npx wrangler@3 deploy. Setup and the steps only Ayrat can do: README.md.
+name = "hayek-ig-bot"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+[triggers]
+crons = ["* * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hayek-ig"
+# PLACEHOLDER: replaced with the id printed by `npx wrangler@3 d1 create hayek-ig` (README step 1)
+database_id = "PLACEHOLDER-run-wrangler-d1-create-hayek-ig"
+
+[vars]
+IG_USERNAME = "hayekyeah"
+# written by connect.sh once the token is in (README step 3). Empty = the Instagram poll and queue stay off.
+IG_ACCOUNT_ID = ""
+# "1" turns on the Facebook comment poll (fb.js). It only runs once FB_PAGE_ID is set and matches the token.
+FB_ENABLED = "1"
+# the hayekyeah Facebook Page ID, written by connect.sh; Facebook actions only run when the token is this Page's
+FB_PAGE_ID = ""
+# where Instagram and Facebook fetch scheduled videos from (GET /media/<key>)
+PUBLIC_URL = "https://hayek-ig-bot.ayrat-mak.workers.dev"
+
+# videos and covers for scheduled Reels, uploaded by schedule.mjs
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "hayek-media"
