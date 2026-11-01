@@ -43,3 +43,9 @@ CREATE TABLE IF NOT EXISTS certificates (
   UNIQUE (email, course)
 );
 CREATE INDEX IF NOT EXISTS certificates_email ON certificates (email);
+
+-- 1 Nov 2026: where a sign-up came from (first visit wins)
+ALTER TABLE signups ADD COLUMN utm_source TEXT;
+ALTER TABLE signups ADD COLUMN utm_medium TEXT;
+ALTER TABLE signups ADD COLUMN utm_campaign TEXT;
+ALTER TABLE signups ADD COLUMN landing TEXT;

@@ -16,6 +16,7 @@ export async function onRequestPost({ request, env }) {
   if (isHoneypot(data)) return reply(request, 200, { ok: true, purchases: [] });
   const name = String(data.name || '').trim().slice(0, 120);
   const email = String(data.email || '').trim().toLowerCase().slice(0, 254);
+  const tag = v => String(v || '').trim().slice(0, 100) || null;  // utm tags and landing page, first visit wins
   const consent = data.consent === true;
   if (name.length < 2) return reply(request, 400, { error: 'Enter your full name. It goes on your certificates.' });
   if (!validEmail(email)) return reply(request, 400, { error: 'Enter a valid email address, like you@company.com.' });
@@ -25,15 +26,19 @@ export async function onRequestPost({ request, env }) {
   const now = new Date().toISOString();
   const origin = (request.headers.get('Origin') || new URL(request.url).origin).slice(0, 100);
   await env.DB.prepare(
-    `INSERT INTO signups (email, name, marketing_consent, consent_at, origin, created_at, last_seen_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)
+    `INSERT INTO signups (email, name, marketing_consent, consent_at, origin, created_at, last_seen_at, utm_source, utm_medium, utm_campaign, landing)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6, ?7, ?8, ?9, ?10)
      ON CONFLICT(email) DO UPDATE SET
        name = excluded.name,
+       utm_source = COALESCE(signups.utm_source, excluded.utm_source),
+       utm_medium = COALESCE(signups.utm_medium, excluded.utm_medium),
+       utm_campaign = COALESCE(signups.utm_campaign, excluded.utm_campaign),
+       landing = COALESCE(signups.landing, excluded.landing),
        last_seen_at = excluded.last_seen_at,
        visits = signups.visits + 1,
        marketing_consent = MAX(signups.marketing_consent, excluded.marketing_consent),
        consent_at = CASE WHEN excluded.marketing_consent = 1 AND signups.marketing_consent = 0 THEN excluded.consent_at ELSE signups.consent_at END`
-  ).bind(email, name, consent ? 1 : 0, consent ? now : null, origin, now).run();
+  ).bind(email, name, consent ? 1 : 0, consent ? now : null, origin, now, tag(data.utm?.source), tag(data.utm?.medium), tag(data.utm?.campaign), tag(data.landing)).run();
 
   let purchases = [];
   try {
