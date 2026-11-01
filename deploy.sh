@@ -3,8 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 rm -rf dist && mkdir -p dist/assets
-cp index.html login.html app.html course.html lesson.html world.html certificate.html privacy.html robots.txt site.webmanifest \
-   favicon.ico favicon.svg favicon-32.png apple-touch-icon.png icon-192.png icon-512.png og-image.png dist/
+cp index.html free.html login.html app.html course.html lesson.html world.html certificate.html privacy.html robots.txt site.webmanifest \
+   favicon.ico favicon.svg favicon-32.png apple-touch-icon.png icon-192.png icon-512.png og-image.png og-free.png dist/
 cp assets/*.css assets/*.js dist/assets/
 mkdir -p dist/assets/courses && cp assets/courses/*.js dist/assets/courses/
 mkdir -p dist/assets/world && cp assets/world/*.js dist/assets/world/

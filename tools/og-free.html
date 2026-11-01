@@ -1,0 +1,54 @@
+<!doctype html>
+<!-- Source for og-free.png (the /free link preview). Re-render at 1200x630:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+       --window-size=1200,630 --virtual-time-budget=4000 --screenshot=og-free.png tools/og-free.html -->
+<html lang="en-GB">
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Geist:wght@500;600&family=Geist+Mono:wght@500&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body { background: #D8D7CF; color: #17150F; font-family: "Geist", sans-serif; display: grid; grid-template-columns: 640px 1fr; }
+  .l { padding: 64px 0 56px 72px; display: grid; align-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 12px; font: 600 26px "Geist"; }
+  .brand img { width: 40px; height: 40px; border-radius: 10px; }
+  .pill { display: inline-flex; align-items: center; gap: 10px; padding: 9px 18px 9px 10px; border-radius: 999px; background: rgba(46,91,69,.12); color: #2E5B45; font: 600 22px "Geist"; margin-bottom: 26px; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #F5DD8B, #D9AE3F 45%, #A9801E); }
+  h1 { font: 400 98px/.92 "Newsreader", serif; letter-spacing: -.035em; }
+  h1 em { color: #2E5B45; }
+  .sub { font: 500 26px/1.35 "Geist"; color: #5C5950; margin-top: 24px; }
+  .r { background: #17150F; color: #E9E7DF; margin: 40px 40px 40px 0; border-radius: 34px; padding: 40px 38px; display: grid; align-content: center; gap: 26px; position: relative; overflow: hidden; }
+  .r::before { content: ""; position: absolute; right: -120px; top: -140px; width: 420px; height: 420px; background: radial-gradient(circle, rgba(217,174,63,.22), transparent 65%); }
+  .q { font: 400 34px/1.1 "Newsreader", serif; letter-spacing: -.02em; position: relative; }
+  .q em { color: #D9AE3F; }
+  .balls { display: flex; gap: 22px; justify-content: center; }
+  .ball { width: 104px; height: 104px; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #FBE9A6, #D9AE3F 42%, #A9801E 78%, #6F5212); box-shadow: inset 0 -9px 16px rgba(0,0,0,.3); display: grid; place-items: center; }
+  .ball span { width: 56px; height: 56px; border-radius: 50%; background: #F4EFE0; color: #17150F; display: grid; place-items: center; font: 500 12px "Geist Mono"; letter-spacing: .06em; }
+  .ball.t span { background: #9A3B2A; color: #F4EFE0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .c { border: 1.5px solid rgba(233,231,223,.16); border-radius: 14px; padding: 14px; text-align: center; font: 400 28px "Newsreader", serif; }
+  .c small { display: block; font: 500 14px "Geist"; color: #A4A095; margin-top: 2px; }
+  .c.on { background: rgba(217,174,63,.2); border-color: #D9AE3F; }
+  .c b { color: #D9AE3F; font-weight: 400; }
+</style>
+<body>
+  <div class="l">
+    <div class="brand"><img src="../favicon.svg" alt="">Gambit</div>
+    <div>
+      <span class="pill"><span class="dot"></span>Your free guide</span>
+      <h1>Game theory for <em>real life</em>.</h1>
+      <p class="sub">10 bite-size lessons you play, not read.<br>Free, with a certificate.</p>
+    </div>
+  </div>
+  <div class="r">
+    <p class="q"><em>£10,000</em> on the table.<br>Split or steal?</p>
+    <div class="balls"><div class="ball"><span>SPLIT</span></div><div class="ball t"><span>STEAL</span></div></div>
+    <div class="grid">
+      <div class="c on"><b>£5k</b> · £5k<small>Share it</small></div>
+      <div class="c"><b>£0</b> · £10k<small>They take it all</small></div>
+      <div class="c"><b>£10k</b> · £0<small>You take it all</small></div>
+      <div class="c"><b>£0</b> · £0<small>Nobody wins</small></div>
+    </div>
+  </div>
+</body>
+</html>

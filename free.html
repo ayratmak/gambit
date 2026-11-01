@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Funnel page for people arriving from the short videos (DM link). Kept out of search on purpose. -->
+<meta name="robots" content="noindex, follow">
+<title>Game theory for real life: your free guide · Gambit</title>
+<meta name="description" content="Your free game theory guide: 10 bite-size lessons you play, not read. Split or steal, pirates, bank runs and more. Free, with a certificate.">
+<meta name="theme-color" content="#D8D7CF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12120E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Gambit">
+<meta property="og:locale" content="en_GB">
+<meta property="og:url" content="https://gambitschool.com/free">
+<meta property="og:title" content="Game theory for real life: your free guide">
+<meta property="og:description" content="10 bite-size lessons you play, not read. Split or steal, pirates, bank runs and more. Free, with a certificate.">
+<meta property="og:image" content="https://gambitschool.com/og-free.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Game theory for real life. Your free guide from Gambit: a split or steal payoff grid.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Game theory for real life: your free guide">
+<meta name="twitter:description" content="10 bite-size lessons you play, not read. Free, with a certificate.">
+<meta name="twitter:image" content="https://gambitschool.com/og-free.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts load without blocking the first paint; system serif and sans stand in until they arrive. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap"></noscript>
+<style>
+:root {
+  --bg: #D8D7CF; --surface: #E3E2DB; --raised: #ECEBE5;
+  --ink: #17150F; --muted: #5C5950;
+  --line: rgba(23, 21, 15, .14); --line-strong: rgba(23, 21, 15, .32);
+  --accent: #2E5B45; --accent-soft: rgba(46, 91, 69, .12); --on-accent: #F1F0EA;
+  --bad: #9A3B2A;
+  --card-bg: #17150F; --card-fg: #E9E7DF; --card-muted: #A4A095; --card-line: rgba(233, 231, 223, .14);
+  --gold: #D9AE3F; --gold-deep: #A9801E;
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --gutter: 16px;
+  --radius: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12120E; --surface: #1B1B16; --raised: #23231D; --ink: #E7E4D9; --muted: #9B978A;
+    --line: rgba(231, 228, 217, .12); --line-strong: rgba(231, 228, 217, .3);
+    --accent: #86B79A; --accent-soft: rgba(134, 183, 154, .14); --on-accent: #12120E; --bad: #E0907E;
+    --card-bg: #22221B; --card-fg: #E7E4D9; --card-muted: #9B978A; --card-line: rgba(231, 228, 217, .12);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12120E; --surface: #1B1B16; --raised: #23231D; --ink: #E7E4D9; --muted: #9B978A;
+  --line: rgba(231, 228, 217, .12); --line-strong: rgba(231, 228, 217, .3);
+  --accent: #86B79A; --accent-soft: rgba(134, 183, 154, .14); --on-accent: #12120E; --bad: #E0907E;
+  --card-bg: #22221B; --card-fg: #E7E4D9; --card-muted: #9B978A; --card-line: rgba(231, 228, 217, .12);
+  color-scheme: dark;
+}
+@media (min-width: 720px) { :root { --gutter: clamp(24px, 4.5vw, 64px); } }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 20px; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 16px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.wrap { padding-inline: var(--gutter); max-width: 1180px; margin-inline: auto; }
+.mono { font: 500 11px/1.4 var(--font-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Top bar ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px 4px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; font: 500 16px var(--font-ui); text-decoration: none; }
+.brand img { width: 24px; height: 24px; border-radius: 6px; }
+.top a.signin { font-size: 14px; color: var(--muted); text-underline-offset: 3px; }
+
+/* ---------- Hero ---------- */
+.hero { display: grid; gap: 28px; padding-block: 14px 28px; }
+.hero .copy { display: grid; gap: 16px; }
+.eyebrow {
+  justify-self: start; display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+  font: 500 13px var(--font-ui);
+}
+.eyebrow .dot { width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #F5DD8B, var(--gold) 45%, var(--gold-deep)); box-shadow: inset 0 -2px 3px rgba(0,0,0,.2); }
+.hero h1 { font-size: clamp(44px, 12.4vw, 84px); line-height: .95; letter-spacing: -.035em; padding-top: 2px; }
+.hero h1 em { color: var(--accent); font-style: italic; }
+.lede { font-size: 17px; line-height: 1.45; color: var(--muted); max-width: 34ch; }
+.lede b { color: var(--ink); font-weight: 500; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.facts li { font-size: 12.5px; padding: 4px 10px; border: 1px solid var(--line-strong); border-radius: 999px; white-space: nowrap; }
+
+/* ---------- Sign-up form ---------- */
+.signup { display: grid; gap: 10px; }
+.signup .row { display: grid; gap: 10px; }
+.input {
+  width: 100%; height: 54px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line-strong);
+  background: var(--raised); color: var(--ink); font: 16px var(--font-ui);
+  -webkit-appearance: none; appearance: none;
+}
+.input::placeholder { color: var(--muted); opacity: .8; }
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.input[aria-invalid="true"] { border-color: var(--bad); }
+.go {
+  height: 58px; width: 100%; border: 0; border-radius: 14px; cursor: pointer;
+  background: var(--accent); color: var(--on-accent); font: 600 17px var(--font-ui); letter-spacing: -.005em;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 10px 24px -12px rgba(46, 91, 69, .7);
+  transition: transform .15s, opacity .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.go:active { transform: scale(.985); }
+.go:disabled { opacity: .6; cursor: default; }
+.go svg { width: 18px; height: 18px; transition: transform .2s; }
+.go:hover svg { transform: translateX(3px); }
+.check { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 13.5px; line-height: 1.4; color: var(--muted); cursor: pointer; align-items: start; padding-top: 2px; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.small { font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.small a { text-underline-offset: 3px; }
+.err { color: var(--bad); font-size: 14px; }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.cf-turnstile:empty { display: none; }
+.welcome { display: grid; gap: 12px; }
+.welcome p { font-size: 16px; }
+.go.as-link { text-decoration: none; }
+
+/* ---------- Split or steal toy ---------- */
+.toy {
+  background: var(--card-bg); color: var(--card-fg); border-radius: 24px;
+  padding: 20px 18px 18px; display: grid; gap: 16px; position: relative; overflow: hidden;
+  box-shadow: 0 30px 60px -40px rgba(0,0,0,.6);
+}
+.toy::before {
+  content: ""; position: absolute; inset: -40% -20% auto auto; width: 70%; aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(217, 174, 63, .16), transparent 65%); pointer-events: none;
+}
+.toy .mono { color: var(--card-muted); }
+.toy h2 { font-size: 27px; line-height: 1.08; letter-spacing: -.02em; }
+.toy h2 em { color: var(--gold); }
+.pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ball {
+  position: relative; border: 0; cursor: pointer; padding: 0; background: none;
+  display: grid; justify-items: center; gap: 6px; -webkit-tap-highlight-color: transparent;
+}
+.ball .orb {
+  width: 84px; height: 84px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #FBE9A6, var(--gold) 42%, var(--gold-deep) 78%, #6F5212);
+  box-shadow: inset 0 -8px 14px rgba(0,0,0,.28), 0 12px 22px -10px rgba(0,0,0,.7);
+  display: grid; place-items: center; transition: transform .2s;
+}
+.ball .orb span {
+  width: 54%; height: 54%; border-radius: 50%; background: #F4EFE0; color: #17150F;
+  display: grid; place-items: center; font: 600 11px var(--font-mono); letter-spacing: .06em;
+}
+.ball.steal .orb span { background: #9A3B2A; color: #F4EFE0; }
+.ball .lab { font: 600 15px var(--font-ui); color: var(--card-fg); }
+.ball:hover .orb { transform: translateY(-3px) rotate(-6deg); }
+.ball:active .orb { transform: scale(.94); }
+.ball[aria-pressed="true"] .orb { box-shadow: inset 0 -8px 14px rgba(0,0,0,.28), 0 0 0 4px var(--card-bg), 0 0 0 6px var(--gold); }
+.toy.idle .ball .orb { animation: bob 2.6s ease-in-out infinite; }
+.toy.idle .ball.steal .orb { animation-delay: -1.3s; }
+@keyframes bob { 50% { transform: translateY(-5px) rotate(-4deg); } }
+
+.grid { display: grid; grid-template-columns: 54px 1fr 1fr; grid-template-rows: auto 1fr 1fr; gap: 6px; }
+.grid .h { font: 500 10.5px/1.2 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--card-muted); display: grid; place-items: center; text-align: center; padding: 2px 0; }
+.grid .h.side { justify-items: start; text-align: left; }
+.cell {
+  border: 1px solid var(--card-line); border-radius: 12px; padding: 10px 8px; min-height: 64px;
+  display: grid; align-content: center; justify-items: center; gap: 2px; text-align: center;
+  transition: background .35s, border-color .35s, transform .35s, opacity .35s;
+}
+.cell b { font: 500 19px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+.cell small { font-size: 11px; color: var(--card-muted); }
+.toy.idle .cell { animation: scan 6s infinite; }
+.toy.idle .cell[data-k="SS"] { animation-delay: 0s; }
+.toy.idle .cell[data-k="ST"] { animation-delay: 1.5s; }
+.toy.idle .cell[data-k="TS"] { animation-delay: 3s; }
+.toy.idle .cell[data-k="TT"] { animation-delay: 4.5s; }
+@keyframes scan { 0%, 22%, 100% { background: transparent; } 6%, 16% { background: rgba(217, 174, 63, .16); border-color: rgba(217, 174, 63, .5); } }
+.toy.played .cell { opacity: .38; }
+.toy.played .cell.on { opacity: 1; background: rgba(217, 174, 63, .2); border-color: var(--gold); transform: scale(1.03); }
+.cell .you { color: var(--gold); }
+.verdict { min-height: 72px; display: grid; gap: 4px; }
+.verdict .who { font: 500 13px var(--font-ui); color: var(--card-muted); }
+.verdict p { font: 400 18px/1.3 var(--font-display); }
+.them { display: inline-flex; align-items: center; gap: 6px; }
+.them i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #F5DD8B, var(--gold) 45%, var(--gold-deep)); }
+.lesson-link { border-top: 1px solid var(--card-line); padding-top: 14px; display: grid; gap: 10px; font-size: 14.5px; line-height: 1.45; color: var(--card-muted); }
+.lesson-link b { color: var(--card-fg); font-weight: 500; }
+.toy .again { justify-self: start; background: none; border: 1px solid var(--card-line); color: var(--card-fg); border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .toy.idle .ball .orb, .toy.idle .cell { animation: none; }
+  * { transition-duration: 0s !important; }
+}
+
+/* ---------- Sections ---------- */
+section.block { padding-block: 44px; border-top: 1px dashed var(--line-strong); }
+.kicker { margin-bottom: 10px; display: block; }
+.block h2 { font-size: clamp(32px, 8.4vw, 52px); line-height: 1.02; letter-spacing: -.03em; max-width: 18ch; }
+.block h2 em { color: var(--accent); }
+.block .intro { color: var(--muted); font-size: 16.5px; margin-top: 12px; max-width: 52ch; }
+
+/* What you'll learn */
+.modules { display: grid; gap: 14px; margin-top: 26px; padding: 0; list-style: none; counter-reset: lesson; }
+.module { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 16px 8px; }
+.module h3 { font: 500 12px/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.module ol { list-style: none; margin: 0; padding: 0; }
+.module li { counter-increment: lesson; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--line); }
+.module li:first-child { border-top: 0; }
+.module li::before { content: counter(lesson, decimal-leading-zero); font: 500 12px var(--font-mono); color: var(--accent); }
+.module li span { font: 400 19px/1.25 var(--font-display); }
+.module li small { font: 500 12px var(--font-mono); color: var(--muted); white-space: nowrap; }
+.exam { display: flex; align-items: center; gap: 14px; background: var(--card-bg); color: var(--card-fg); border-radius: var(--radius); padding: 16px; }
+.exam svg { flex: none; width: 40px; height: 40px; color: var(--gold); }
+.exam b { font: 400 19px/1.25 var(--font-display); display: block; }
+.exam span { font-size: 13.5px; color: var(--card-muted); }
+
+/* Real life */
+.cards { display: grid; gap: 12px; margin-top: 26px; }
+.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 4px 14px; align-items: start; }
+.card .ic { grid-row: span 3; width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+.card .ic svg { width: 34px; height: 34px; }
+.card h3 { font-size: 22px; line-height: 1.1; letter-spacing: -.015em; }
+.card p { font-size: 15px; color: var(--muted); }
+.card .in { font-size: 13px; color: var(--ink); margin-top: 6px; display: flex; gap: 6px; align-items: baseline; }
+.card .in::before { content: "Lesson"; font: 500 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); flex: none; }
+
+/* How it works */
+.steps { display: grid; gap: 12px; margin-top: 26px; padding: 0; list-style: none; }
+.step { border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; }
+.step .n { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 500 14px var(--font-mono); }
+.step h3 { font-size: 24px; letter-spacing: -.015em; }
+.step p { color: var(--muted); font-size: 15.5px; }
+.cert {
+  margin-top: 6px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line);
+  padding: 14px; display: grid; gap: 4px; justify-items: center; text-align: center; position: relative;
+}
+.cert::after { content: ""; position: absolute; inset: 5px; border: 1px solid var(--line-strong); border-radius: 8px; pointer-events: none; }
+.cert .mono { font-size: 9.5px; }
+.cert b { font: italic 400 20px/1.1 var(--font-display); }
+.cert span { font-size: 12px; color: var(--muted); }
+
+/* Repeat CTA */
+.cta { background: var(--card-bg); color: var(--card-fg); border-radius: 26px; padding: 26px 18px 20px; display: grid; gap: 18px; }
+.cta h2 { color: var(--card-fg); }
+.cta h2 em { color: var(--gold); }
+.cta .intro { color: var(--card-muted); }
+.cta .input { background: rgba(255,255,255,.06); border-color: var(--card-line); color: var(--card-fg); }
+.cta .input::placeholder { color: var(--card-muted); }
+.cta .go { background: var(--gold); color: #17150F; box-shadow: 0 10px 24px -12px rgba(217, 174, 63, .6); }
+.cta .check, .cta .small { color: var(--card-muted); }
+.cta .err { color: #E0907E; }
+
+/* FAQ */
+.faq { margin-top: 22px; border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary { list-style: none; cursor: pointer; padding: 18px 0; display: flex; justify-content: space-between; gap: 16px; font: 400 21px/1.25 var(--font-display); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font: 400 24px/1 var(--font-ui); color: var(--accent); transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { padding: 0 0 18px; color: var(--muted); max-width: 60ch; }
+
+footer { padding-block: 28px calc(100px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between; border-top: 1px dashed var(--line-strong); }
+footer a { font-size: 13px; color: var(--muted); text-underline-offset: 3px; }
+
+/* ---------- Sticky mobile CTA ---------- */
+.sticky {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+  transform: translateY(110%); transition: transform .28s ease;
+}
+.sticky.show { transform: none; }
+.sticky .go { height: 52px; font-size: 16px; }
+.sticky .go small { font: 500 12px var(--font-ui); opacity: .8; }
+
+/* ---------- Wider screens ---------- */
+@media (min-width: 720px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+  .steps { grid-template-columns: repeat(3, 1fr); }
+  .modules { grid-template-columns: 1fr 1fr; }
+  .cta { padding: 40px; }
+}
+@media (min-width: 980px) {
+  .top { padding-block: 22px 8px; }
+  .hero { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 56px; align-items: center; padding-block: 36px 64px; min-height: min(760px, calc(100vh - 70px)); }
+  .hero .copy { gap: 22px; }
+  .lede { font-size: 19px; }
+  .toy { padding: 28px; gap: 18px; }
+  .toy h2 { font-size: 32px; }
+  .ball .orb { width: 100px; height: 100px; }
+  .cell { min-height: 76px; }
+  .cell b { font-size: 22px; }
+  section.block { padding-block: 72px; }
+  .block-head { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; }
+  .block-head .intro { margin-top: 0; }
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .cta { grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; padding: 56px; }
+  .faq-wrap { display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px; }
+  .faq { margin-top: 0; }
+  .sticky { display: none; }
+  footer { padding-bottom: 32px; }
+}
+@media (min-width: 980px) and (max-height: 820px) {
+  .hero h1 { font-size: 72px; }
+}
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="brand" href="/"><img src="favicon.svg" alt="" width="24" height="24">Gambit</a>
+  <a class="signin" href="login.html?next=lesson.html%3Fc%3Dfoundations%26l%3Dwhat-is-a-game">Sign in</a>
+</header>
+
+<main>
+  <section class="wrap hero" aria-labelledby="h1">
+    <div class="copy">
+      <span class="eyebrow"><span class="dot" aria-hidden="true"></span>Your free guide from the videos</span>
+      <h1 id="h1">Game theory for <em>real life</em>.</h1>
+      <p class="lede">Play the games behind split or steal, the pirates and the bank run. <b>10 bite-size lessons, free, with a certificate.</b></p>
+      <ul class="facts" aria-label="At a glance">
+        <li>10 lessons</li><li>About 2 hours</li><li>No maths needed</li>
+      </ul>
+      <div data-slot="signup" id="start"></div>
+    </div>
+
+    <!-- Split or steal: tap a ball, the other player picks at the same time, the payoff grid lights up. -->
+    <div class="toy idle" id="toy" aria-labelledby="toy-h">
+      <span class="mono">Try it now · 10 seconds</span>
+      <h2 id="toy-h"><em>£10,000</em> on the table. Do you split or steal?</h2>
+      <div class="pick" role="group" aria-label="Your choice">
+        <button class="ball split" type="button" data-move="S" aria-pressed="false"><span class="orb"><span>SPLIT</span></span><span class="lab">Split</span></button>
+        <button class="ball steal" type="button" data-move="T" aria-pressed="false"><span class="orb"><span>STEAL</span></span><span class="lab">Steal</span></button>
+      </div>
+      <div class="grid" aria-hidden="true">
+        <span></span><span class="h">They split</span><span class="h">They steal</span>
+        <span class="h side">You split</span>
+        <div class="cell" data-k="SS"><b><span class="you">£5k</span> · £5k</b><small>Share it</small></div>
+        <div class="cell" data-k="ST"><b><span class="you">£0</span> · £10k</b><small>They take it all</small></div>
+        <span class="h side">You steal</span>
+        <div class="cell" data-k="TS"><b><span class="you">£10k</span> · £0</b><small>You take it all</small></div>
+        <div class="cell" data-k="TT"><b><span class="you">£0</span> · £0</b><small>Nobody wins</small></div>
+      </div>
+      <div class="verdict" aria-live="polite">
+        <span class="who" id="who">Your winnings first, theirs second. Tap a ball.</span>
+        <p id="say">They choose at the same moment you do. No take-backs.</p>
+      </div>
+      <div class="lesson-link" id="lesson-link" hidden>
+        <p><b>Look at your row.</b> Whatever they do, stealing never leaves you worse off than splitting. When both players think like that, the money vanishes. That's the prisoner's dilemma, and it's lesson 3 of the guide.</p>
+        <button class="again" type="button" id="again">Play again</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="learn-h">
+    <div class="block-head">
+      <div><span class="mono kicker">What's inside</span><h2 id="learn-h">Ten lessons. Each one is a game you <em>play</em>.</h2></div>
+      <p class="intro">The guide is Gambit's free course, <b>Think Three Moves Ahead</b>. Lessons take 8 to 14 minutes, so one fits in a coffee break.</p>
+    </div>
+    <!-- Lesson titles and minutes match assets/courses/foundations.js -->
+    <div class="modules">
+      <div class="module"><h3>The language of games</h3><ol>
+        <li><span>Why incentives bite back</span><small>10 min</small></li>
+        <li><span>Reading a payoff matrix</span><small>8 min</small></li>
+      </ol></div>
+      <div class="module"><h3>Solving simple games</h3><ol>
+        <li><span>Dominant strategies and the prisoner's dilemma</span><small>12 min</small></li>
+        <li><span>Nash equilibrium</span><small>12 min</small></li>
+        <li><span>How far ahead do others think?</span><small>10 min</small></li>
+        <li><span>When there's more than one answer</span><small>10 min</small></li>
+      </ol></div>
+      <div class="module"><h3>Moves in turn</h3><ol>
+        <li><span>Game trees and backward induction</span><small>14 min</small></li>
+        <li><span>The pirates' treasure</span><small>12 min</small></li>
+        <li><span>Credible and empty threats</span><small>12 min</small></li>
+      </ol></div>
+      <div class="module"><h3>Games that repeat</h3><ol>
+        <li><span>Meeting again: repeated games and collusion</span><small>14 min</small></li>
+      </ol>
+      </div>
+      <div class="exam">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="20" cy="16" r="10"/><circle cx="20" cy="16" r="5.5"/><path d="M13.5 23.5 11 35l9-4 9 4-2.5-11.5"/></svg>
+        <div><b>Final assessment and certificate</b><span>10 questions, 7 to pass. Free.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="life-h">
+    <div class="block-head">
+      <div><span class="mono kicker">Game theory for real life</span><h2 id="life-h">You saw the video. Now learn <em>the move</em>.</h2></div>
+      <p class="intro">Every story from the videos runs on one idea. The guide teaches you that idea, then lets you play it.</p>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="ic"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="17" r="8"/><circle cx="24" cy="17" r="8"/><circle cx="11" cy="17" r="3.5"/><circle cx="24" cy="17" r="3.5"/></svg></span>
+        <h3>Golden Balls</h3>
+        <p>Why saying “I'll steal” can be the smartest move on the table.</p>
+        <span class="in">The prisoner's dilemma, then credible and empty threats</span>
+      </article>
+      <article class="card">
+        <span class="ic"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M17 4c-5 0-8 5-8 12s2 14 8 14 8-7 8-14-3-12-8-12Z"/><path d="M17 12c-2.5 0-4 3-4 7s1.5 8 4 8 4-4 4-8-1.5-7-4-7Z"/><path d="M15 8.5h4"/><path d="M3 31h28"/></svg></span>
+        <h3>Penguins</h3>
+        <p>Thousands of hungry penguins, and nobody wants to jump in first.</p>
+        <span class="in">Nash equilibrium: what's best when everyone waits</span>
+      </article>
+      <article class="card">
+        <span class="ic"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 13 17 5l13 8H4Z"/><path d="M7 13v11M13 13v11M21 13v11M27 13v11M4 24h26"/><circle cx="7" cy="29" r="1.4"/><circle cx="12" cy="29" r="1.4"/><circle cx="17" cy="29" r="1.4"/><circle cx="22" cy="29" r="1.4"/><circle cx="27" cy="29" r="1.4"/></svg></span>
+        <h3>Bank runs</h3>
+        <p>Northern Rock, 2007: the queue itself became the danger.</p>
+        <span class="in">When there's more than one answer</span>
+      </article>
+      <article class="card">
+        <span class="ic"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="17" cy="13" rx="12" ry="5"/><path d="M5 13v9c0 2.8 5.4 5 12 5s12-2.2 12-5v-9"/><path d="M17 8v10" stroke-dasharray="2 2"/><path d="M17 3v3"/></svg></span>
+        <h3>Cake cutting</h3>
+        <p>I cut, you choose. Why the cutter makes it perfectly fair.</p>
+        <span class="in">Game trees and backward induction</span>
+      </article>
+      <article class="card">
+        <span class="ic"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="17" cy="26" rx="11" ry="3.5"/><path d="M6 26v-4c0-1.9 4.9-3.5 11-3.5s11 1.6 11 3.5v4"/><ellipse cx="17" cy="15" rx="8" ry="2.6"/><path d="M9 15v-3.5c0-1.4 3.6-2.6 8-2.6s8 1.2 8 2.6V15"/><path d="M14 5l3-2 3 2"/></svg></span>
+        <h3>The pirate game</h3>
+        <p>Five pirates, 100 gold, and the captain keeps almost all of it.</p>
+        <span class="in">The pirates' treasure</span>
+      </article>
+      <article class="card">
+        <span class="ic"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="10" width="28" height="15" rx="2"/><circle cx="17" cy="17.5" r="4"/><path d="M7 14h3M24 21h3"/><path d="M25 3v5M22.5 5.5 25 3l2.5 2.5"/></svg></span>
+        <h3>The £20 auction</h3>
+        <p>Why people pay £30 for a £20 note, and how to never be one of them.</p>
+        <span class="in">Game trees: look ahead before you bid</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="how-h">
+    <div class="block-head">
+      <div><span class="mono kicker">How it works</span><h2 id="how-h">Play first. Learn its name <em>after</em>.</h2></div>
+      <p class="intro">No videos to sit through and no essays. You make a move, see what happens, and find out why.</p>
+    </div>
+    <ol class="steps">
+      <li class="step"><span class="n">1</span><h3>Play the game</h3><p>Tap payoff grids, solve game trees, split gold between pirates and guess what others will guess.</p></li>
+      <li class="step"><span class="n">2</span><h3>See why it works</h3><p>Every answer comes with a short explanation, right or wrong. Progress saves as you go.</p></li>
+      <li class="step"><span class="n">3</span><h3>Earn your certificate</h3><p>Pass the 10-question final assessment. You get a certificate with its own ID, a PDF and an Add to LinkedIn button.</p>
+        <div class="cert" aria-hidden="true"><span class="mono">Gambit · Certificate</span><b>Think Three Moves Ahead</b><span>Your name here</span></div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="wrap block" aria-labelledby="cta-h">
+    <div class="cta">
+      <div>
+        <span class="mono kicker" style="color:var(--card-muted)">Free · no card</span>
+        <h2 id="cta-h">Lesson 1 takes <em>10 minutes</em>. Start it now.</h2>
+        <p class="intro">Enter your name and email and you go straight into the first lesson.</p>
+      </div>
+      <div data-slot="signup"></div>
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="faq-h">
+    <div class="faq-wrap">
+      <div><span class="mono kicker">Questions</span><h2 id="faq-h">The short answers.</h2></div>
+      <div class="faq">
+        <details><summary>Is it really free?</summary><p>Yes. The Foundations course, Think Three Moves Ahead, is free: all 10 lessons, the final assessment and the certificate. You don't need a card. Gambit has eight more courses at £9.89 each if you want to go further, but you never have to buy one.</p></details>
+        <details><summary>How long does it take?</summary><p>About two hours in total. Each lesson takes 8 to 14 minutes, so you can do one at a time whenever you like. Your progress is saved in this browser.</p></details>
+        <details><summary>Do I need to be good at maths?</summary><p>No. If you can add up and compare two numbers, you can do every lesson. A payoff grid is just a small table, like the split or steal one above, and the lessons walk you through each one.</p></details>
+        <details><summary>What's the certificate?</summary><p>Pass the final assessment (7 out of 10) and you get a Gambit certificate in your name, with its own ID and a public link anyone can use to check it. You can download it as a PDF or add it to your LinkedIn profile.</p></details>
+        <details><summary>What happens to my email?</summary><p>We use your name and email to sign you in and put your name on your certificate. We only send course news if you tick the box, and you can unsubscribe any time. See our <a href="privacy.html">privacy notice</a>.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span class="mono">Gambit · Game theory, taught at the table</span>
+  <span><a href="/">All courses</a> &nbsp; <a href="privacy.html">Privacy</a></span>
+</footer>
+
+<div class="sticky" id="sticky" aria-hidden="true">
+  <button class="go" type="button" id="sticky-go" tabindex="-1">Start the free guide <small>· 10 lessons</small></button>
+</div>
+
+<!-- One sign-up form, stamped into each [data-slot="signup"]. -->
+<template id="signup-tpl">
+  <form class="signup" novalidate>
+    <div class="row">
+      <label class="sr" for="name-#">Full name</label>
+      <input class="input" id="name-#" name="name" autocomplete="name" autocapitalize="words" placeholder="Your full name (for your certificate)" required>
+      <label class="sr" for="email-#">Email</label>
+      <input class="input" id="email-#" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="Your email" required>
+    </div>
+    <div class="hp" aria-hidden="true"><label for="website-#">Website</label><input id="website-#" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <div class="cf-turnstile" data-turnstile data-sitekey="0x4AAAAAAFano623vo4fDemw" data-appearance="interaction-only" data-size="flexible" data-theme="auto"></div>
+    <p class="err" role="alert" hidden></p>
+    <button class="go" type="submit"><span>Start the free guide</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg></button>
+    <label class="check"><input type="checkbox" name="consent"><span>Email me when new courses launch. Occasional, and you can unsubscribe any time.</span></label>
+    <p class="small">Free, no card. By continuing you agree to our <a href="privacy.html">privacy notice</a>.</p>
+  </form>
+</template>
+<template id="welcome-tpl">
+  <div class="welcome">
+    <p>Welcome back, <b data-name></b>. Your guide is waiting.</p>
+    <a class="go as-link" href="lesson.html?c=foundations&amp;l=what-is-a-game"><span>Carry on learning</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a>
+  </div>
+</template>
+
+<script>
+/* ---------- Split or steal toy (no dependencies, runs straight away) ---------- */
+(() => {
+  const toy = document.getElementById('toy');
+  const say = document.getElementById('say'), who = document.getElementById('who');
+  const link = document.getElementById('lesson-link');
+  const LINES = {
+    SS: ['You split, they split.', '£5,000 each. The best result for the pair, and the one that needs trust.'],
+    ST: ['You split, they stole.', 'They walk off with £10,000. Trusting them cost you everything.'],
+    TS: ['You stole, they split.', '£10,000 to you, nothing to them. Will you sleep tonight?'],
+    TT: ['You stole, they stole.', 'Nobody gets a penny. Each move made sense alone. Together it\'s a disaster.']
+  };
+  let plays = 0;
+  toy.querySelectorAll('.ball').forEach(b => b.addEventListener('click', () => {
+    const mine = b.dataset.move, theirs = Math.random() < .5 ? 'S' : 'T', k = mine + theirs;
+    toy.classList.remove('idle'); toy.classList.add('played');
+    toy.querySelectorAll('.ball').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    toy.querySelectorAll('.cell').forEach(c => c.classList.toggle('on', c.dataset.k === k));
+    who.innerHTML = '<span class="them"><i></i>They chose ' + (theirs === 'S' ? 'split' : 'steal') + '</span>';
+    say.textContent = LINES[k][0] + ' ' + LINES[k][1];
+    if (++plays >= 1) link.hidden = false;
+  }));
+  document.getElementById('again').addEventListener('click', () => {
+    toy.classList.remove('played'); toy.classList.add('idle');
+    toy.querySelectorAll('.cell').forEach(c => c.classList.remove('on'));
+    toy.querySelectorAll('.ball').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    who.textContent = 'Round ' + (plays + 1) + '. Same table, same stakes.';
+    say.textContent = 'Will you trust them this time?';
+  });
+})();
+</script>
+<script src="assets/core.js?v=10" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const FIRST = 'lesson.html?c=foundations&l=what-is-a-game';
+  const G = window.G;
+
+  /* ---------- Campaign tracking: utm_* from the DM link, kept for this visit and sent with the sign-up ---------- */
+  const utm = {};
+  const qp = new URLSearchParams(location.search);
+  ['source', 'medium', 'campaign', 'content', 'term'].forEach(k => { const v = qp.get('utm_' + k); if (v) utm[k] = v.slice(0, 100); });
+  try {
+    if (Object.keys(utm).length) sessionStorage.setItem('gambit.utm', JSON.stringify(utm));
+    else Object.assign(utm, JSON.parse(sessionStorage.getItem('gambit.utm') || '{}'));
+  } catch { /* storage blocked: the URL values still go with the sign-up */ }
+
+  // Local wrangler (`wrangler pages dev`, port 8788) has its own /api and D1, so post there rather than to the live site.
+  const LOCAL_API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port === '8788';
+  async function register(body) {
+    if (!LOCAL_API) return G.register(body);
+    const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || 'Something went wrong. Try again in a moment.');
+    return out;
+  }
+
+  /* ---------- Sign-up forms ---------- */
+  const user = G && G.Store.user;
+  const slots = [...document.querySelectorAll('[data-slot="signup"]')];
+  let last = null;
+  try { last = JSON.parse(localStorage.getItem('gambit.last') || 'null'); } catch {}
+
+  slots.forEach((slot, i) => {
+    if (user) {
+      const w = document.getElementById('welcome-tpl').content.cloneNode(true);
+      w.querySelector('[data-name]').textContent = (user.name || '').split(' ')[0] || 'again';
+      slot.appendChild(w);
+      return;
+    }
+    const html = document.getElementById('signup-tpl').innerHTML.replace(/-#/g, '-' + i);
+    slot.innerHTML = html;
+    const form = slot.querySelector('form');
+    const $ = n => form.querySelector('[name="' + n + '"]');
+    const err = form.querySelector('.err'), btn = form.querySelector('button[type="submit"]'), label = btn.querySelector('span');
+    if (last) { $('name').value = last.name || ''; $('email').value = last.email || ''; }
+    const fail = (msg, field) => {
+      err.textContent = msg; err.hidden = false; btn.disabled = false; label.textContent = 'Start the free guide';
+      if (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); }
+    };
+    form.addEventListener('input', e => { e.target.removeAttribute('aria-invalid'); });
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      err.hidden = true;
+      const name = $('name').value.trim(), email = $('email').value.trim().toLowerCase(), consent = $('consent').checked;
+      if (name.length < 2) return fail('Enter your full name. It goes on your certificate.', $('name'));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email address, like you@example.com.', $('email'));
+      if (!G) return fail('The page didn\'t load properly. Refresh and try again.');
+      btn.disabled = true; label.textContent = 'Opening lesson 1…';
+      const token = LOCAL_API ? '' : await G.humanToken(form);
+      let reg;
+      try {
+        reg = await register({ name, email, consent, website: $('website').value, 'cf-turnstile-response': token, landing: 'free', utm });
+      } catch (x) {
+        G.humanReset(form);
+        return fail(x instanceof TypeError ? 'We couldn\'t reach Gambit. Check your connection and try again.' : x.message);
+      }
+      try { localStorage.setItem('gambit.last', JSON.stringify({ name, email })); } catch {}
+      G.Store.signIn({ name, email });
+      G.Store.addPurchases(reg && reg.purchases);
+      G.Store.addCertificates(reg && reg.certificates);
+      location.href = FIRST;
+    });
+  });
+
+  // Bot check: load Turnstile once the page has painted (not on local dev, where the site key isn't valid).
+  if (!user && !LOCAL_API) {
+    const load = () => { const s = document.createElement('script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'; s.async = true; document.head.appendChild(s); };
+    document.readyState === 'complete' ? load() : addEventListener('load', load);
+  }
+
+  /* ---------- Sticky CTA on phones: shows when no sign-up form is on screen ---------- */
+  const sticky = document.getElementById('sticky'), stickyGo = document.getElementById('sticky-go');
+  if (user) stickyGo.textContent = 'Carry on learning';
+  const seen = new Map();
+  let pastHero = false;
+  const update = () => {
+    const show = pastHero && ![...seen.values()].some(Boolean);
+    sticky.classList.toggle('show', show);
+    sticky.setAttribute('aria-hidden', String(!show));
+    stickyGo.tabIndex = show ? 0 : -1;
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { es.forEach(e => seen.set(e.target, e.isIntersecting)); update(); }, { threshold: .25 });
+    slots.forEach(s => io.observe(s));
+    const heroIo = new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting && e.boundingClientRect.top < 0; update(); });
+    heroIo.observe(document.getElementById('start'));
+  }
+  stickyGo.addEventListener('click', () => {
+    // Jump to whichever form is closer, and open the keyboard on its first empty field.
+    const target = slots.map(s => [s, Math.abs(s.getBoundingClientRect().top)]).sort((a, b) => a[1] - b[1])[0][0];
+    target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+    const field = [...target.querySelectorAll('input.input')].find(x => !x.value) || target.querySelector('input.input, a.go');
+    if (field) setTimeout(() => field.focus({ preventScroll: true }), 350);
+  });
+});
+</script>
+</body>
+</html>
