@@ -8,7 +8,7 @@ export default {
   // Taken out before the whole-word check, so everyday "of course" doesn't send anyone a DM.
   "ignore": ["of course"],
   "guide_url": "https://gambitschool.com/free",
-  "message": "Here's your free guide 👇\n\n{link}\n\nIt's a short interactive course on the game theory behind every negotiation: you play through real dilemmas, make your move, and see how a game theorist would play it. Enjoy, and follow @hayekyeah for a new one every day.",
+  "message": "Here's your free course 👇\n\n{link}\n\nIt's a short interactive course on the game theory behind every negotiation: you play through real dilemmas, make your move, and see how a game theorist would play it. Enjoy, and follow @hayekyeah for a new one every day.",
   // One is picked per comment, so replies under a post don't all look the same.
   "public_replies": [
     "Sent! Check your DMs 📘",
