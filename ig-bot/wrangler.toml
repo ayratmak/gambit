@@ -18,11 +18,11 @@ database_id = "73fc43c5-59a3-4607-a489-001249631ff3"
 [vars]
 IG_USERNAME = "hayekyeah"
 # written by connect.sh once the token is in (README step 3). Empty = the Instagram poll and queue stay off.
-IG_ACCOUNT_ID = ""
+IG_ACCOUNT_ID = "17841465480145092"
 # "1" turns on the Facebook comment poll (fb.js). It only runs once FB_PAGE_ID is set and matches the token.
 FB_ENABLED = "1"
 # the hayekyeah Facebook Page ID, written by connect.sh; Facebook actions only run when the token is this Page's
-FB_PAGE_ID = ""
+FB_PAGE_ID = "1331854990022182"
 # where Instagram and Facebook fetch scheduled videos from (GET /media/<key>)
 PUBLIC_URL = "https://hayek-ig-bot.ayrat-mak.workers.dev"
 
