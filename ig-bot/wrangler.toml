@@ -13,7 +13,7 @@ crons = ["* * * * *"]
 binding = "DB"
 database_name = "hayek-ig"
 # PLACEHOLDER: replaced with the id printed by `npx wrangler@3 d1 create hayek-ig` (README step 1)
-database_id = "PLACEHOLDER-run-wrangler-d1-create-hayek-ig"
+database_id = "73fc43c5-59a3-4607-a489-001249631ff3"
 
 [vars]
 IG_USERNAME = "hayekyeah"
