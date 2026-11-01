@@ -12,7 +12,7 @@ for (const [t, want] of [
   ['gametheory', true], ['GAMETHEORY!!', true], ['game-theory', true], ['Game – Theory', true], ['game  theory', true],
   ['#gametheory', true], ['love this, game theory please', true], ['@friend look: GameTheory', true],
   ['guide', true], ['GUIDE', true], ['Guide!', true], ['send the guide pls', true], ['course', true], ['Course?', true],
-  ['the free course please', true], ['guide 📘', true],
+  ['the free course please', true], ['guide 📘', true], ['NEGOTIATE', true], ['negotiate!', true], ['Negotiation 🙏', true], ['renegotiate', false],
   ['guided tour', false], ['courses', false], ['coursework', false], ['misguided', false], ['great vid', false],
   ['game on', false], ['theory of games', false], ['of course he lost', false], ['Of Course!', false], ['ofcourse', false],
   ['of course, send the guide', true], ['of course I want the course', true], ['', false],
