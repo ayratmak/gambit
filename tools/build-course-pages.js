@@ -126,7 +126,7 @@ function topbar(nextPath) {
   const n = encodeURIComponent(nextPath);
   return `<header class="topbar"><div class="wrap topbar-in">
   <a class="brand" href="/"><canvas class="piece-icon" data-piece="knight" aria-hidden="true"></canvas>Gambit</a>
-  <nav aria-label="Site" class="hide-sm"><a href="/courses/">All courses</a></nav>
+  <nav aria-label="Site" class="hide-sm"><a href="/courses/">All courses</a><a href="/guides/">Guides</a></nav>
   <div style="display:flex;gap:8px" id="authBtns"><a class="btn ghost hide-sm" href="/login.html?next=${n}">Sign in</a><a class="btn solid" href="/login.html?next=${n}">Start free</a></div>
 </div></header>`;
 }
@@ -262,5 +262,6 @@ for (const c of courses) {
 }
 urls.splice(1, 0, [SITE + '/courses/', hubMod]);
 urls.splice(1, 0, ...require('./build-track-pages.js')(OUT, courses, cfg, lastmod));
+urls.push(...require('./build-guides.js')(OUT));   // daily guides: only those dated today or earlier
 fs.writeFileSync(path.join(OUT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls.map(([u, d]) => `  <url><loc>${u}</loc><lastmod>${d}</lastmod></url>`).join('\n') + '\n</urlset>\n');
 console.log(`Built ${courses.length} course pages, the hub and a sitemap with ${urls.length} URLs in ${OUT}`);
