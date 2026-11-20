@@ -1,0 +1,30 @@
+# Gambit
+
+> Gambit is an online school of interactive game theory, negotiation, procurement and auction courses, where learners play each game, pass an assessment and earn a certificate.
+
+Gambit teaches game theory through play rather than lectures. Each course is a series of short interactive lessons (payoff tables, game trees, auctions, scripted negotiations) followed by a final assessment and a certificate. It is aimed at buyers and procurement teams, sales and account managers, students, and anyone who wants to negotiate better. The site is in British English and prices are in pounds. The first course, Game Theory Foundations, is free. Every other course costs £9.89. Gambit is run by Origin Collective Limited, a company registered in England and Wales. It also publishes free plain-English guides to negotiation and game theory, with a new one most days.
+
+## Courses
+- [All courses](https://gambitschool.com/courses/): Nine interactive courses on game theory, negotiation, procurement and auctions.
+- [Game Theory Foundations (free)](https://gambitschool.com/courses/game-theory-foundations): Payoff matrices, Nash equilibrium, game trees, credible threats and repeated games.
+- [Strategic Thinking](https://gambitschool.com/courses/strategic-thinking): Change a game you are losing, make threats and promises credible, and send signals people believe.
+- [Negotiation: Bargaining Power](https://gambitschool.com/courses/negotiation-bargaining-power): BATNA, ZOPA, information, deadlines and first offers.
+- [Negotiation Psychology](https://gambitschool.com/courses/negotiation-psychology): Anchoring, framing, decoys, fairness and risk, plus a tactics toolkit.
+- [Negotiation Preparation](https://gambitschool.com/courses/negotiation-preparation): Build a fact sheet, score your levers and draw a game plan.
+- [Procurement: Tender Design](https://gambitschool.com/courses/procurement-tender-design): Fix the award rules before suppliers bid and build real competition.
+- [Supplier Evaluation and Total Cost](https://gambitschool.com/courses/supplier-evaluation-total-cost): Compare unequal suppliers on one True Price, including whole-life cost.
+- [Auction Theory](https://gambitschool.com/courses/auction-theory): English, Dutch, first-price and second-price auctions and the winner's curse.
+- [Advanced Auction Design](https://gambitschool.com/courses/advanced-auction-design): Reserve prices, collusion, bid signalling, dual sourcing and long contracts.
+
+## Learning tracks
+- [Procurement negotiation training](https://gambitschool.com/for/procurement): Six courses for buyers and category managers.
+- [Sales negotiation training](https://gambitschool.com/for/sales): Five courses for account managers and bid teams.
+- [Game theory for students](https://gambitschool.com/for/students): Strategic thinking, negotiation and auctions, with certificates.
+
+## Guides
+- [Negotiation and game theory guides](https://gambitschool.com/guides/): Free plain-English guides on BATNA, anchoring, the prisoner's dilemma, Nash equilibrium, salary talks and more.
+- [RSS feed of guides](https://gambitschool.com/guides/feed.xml): Latest guides as they are published.
+
+## Optional
+- [Sitemap](https://gambitschool.com/sitemap.xml): Every public page.
+- [Privacy notice](https://gambitschool.com/privacy): Who runs Gambit and how personal data is handled.

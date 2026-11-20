@@ -1,4 +1,54 @@
+# Search and AI crawlers are welcome on all public pages. /api/ is application back-end.
+
 User-agent: *
+Disallow: /api/
+
+User-agent: Bingbot
+Disallow: /api/
+
+User-agent: Googlebot
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Disallow: /api/
+
+User-agent: GPTBot
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Disallow: /api/
+
+User-agent: Claude-User
+Disallow: /api/
+
+User-agent: ClaudeBot
+Disallow: /api/
+
+User-agent: PerplexityBot
+Disallow: /api/
+
+User-agent: Perplexity-User
+Disallow: /api/
+
+User-agent: Google-Extended
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Disallow: /api/
+
+User-agent: DuckAssistBot
+Disallow: /api/
+
+User-agent: Amazonbot
+Disallow: /api/
+
+User-agent: meta-externalagent
+Disallow: /api/
+
+User-agent: MistralAI-User
 Disallow: /api/
 
 Sitemap: https://gambitschool.com/sitemap.xml
